@@ -159,7 +159,10 @@
       ],
       "dependsOn": [],
       "externalDependencies": [],
-      "externalPrerequisites": []
+      "externalPrerequisites": [],
+      "contributingPrs": [
+        68
+      ]
     },
     {
       "id": "TPR-013",
@@ -194,6 +197,9 @@
       "externalDependencies": [],
       "externalPrerequisites": [
         "Live verification of the FC-13 catalog export against a non-empty FOIA Aggregator archive"
+      ],
+      "contributingPrs": [
+        67
       ]
     },
     {
@@ -216,7 +222,10 @@
       ],
       "dependsOn": [],
       "externalDependencies": [],
-      "externalPrerequisites": []
+      "externalPrerequisites": [],
+      "contributingPrs": [
+        68
+      ]
     },
     {
       "id": "TPR-018",
