@@ -184,3 +184,14 @@ export function ExportPanel({result}:{result:{ready:true;text:string;filename:st
     <section className="print-only-record"><pre style={{whiteSpace:"pre-wrap",overflowWrap:"anywhere",fontFamily:"inherit",background:"#f4f6f5",padding:12,borderRadius:8}}>{result.text}</pre></section>
   </div>;
 }
+
+/** Generic POST action button for editorial review pages. */
+export function ActionButton({url,body,label}:{url:string;body:Record<string,unknown>;label:string}){
+  const router=useRouter();
+  const [status,setStatus]=useState("");
+  return <span><button type="button" onClick={async()=>{
+    setStatus("…");
+    const res=await fetch(url,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
+    setStatus(res.ok?"Done":await problemText(res));if(res.ok)router.refresh();
+  }}>{label}</button> <span aria-live="polite">{status}</span></span>;
+}

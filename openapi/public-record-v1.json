@@ -568,6 +568,439 @@
           }
         }
       }
+    },
+    "/api/v1/admin/public-record/templates": {
+      "get": {
+        "summary": "All template versions (editors/reviewers)",
+        "security": [
+          {
+            "memberSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "See summary"
+          },
+          "401": {
+            "description": "Problem details",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Problem details",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Problem details",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a template or a new version (editor)",
+        "security": [
+          {
+            "memberSession": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "See summary"
+          },
+          "422": {
+            "description": "See summary"
+          },
+          "401": {
+            "description": "Problem details",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Problem details",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Problem details",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/public-record/templates/{id}/{version}": {
+      "patch": {
+        "summary": "Edit your own draft",
+        "security": [
+          {
+            "memberSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "See summary"
+          },
+          "404": {
+            "description": "See summary"
+          },
+          "409": {
+            "description": "See summary"
+          },
+          "422": {
+            "description": "See summary"
+          },
+          "401": {
+            "description": "Problem details",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Problem details",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Problem details",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "submit (author) | approve, reject, retire (different editor or records reviewer)",
+        "security": [
+          {
+            "memberSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "See summary"
+          },
+          "404": {
+            "description": "See summary"
+          },
+          "409": {
+            "description": "See summary"
+          },
+          "422": {
+            "description": "See summary"
+          },
+          "401": {
+            "description": "Problem details",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Problem details",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Problem details",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/public-record/filing-routes": {
+      "get": {
+        "summary": "Filing routes and trusted hosts",
+        "security": [
+          {
+            "memberSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "See summary"
+          },
+          "401": {
+            "description": "Problem details",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Problem details",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Problem details",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Propose a route on trusted hosts",
+        "security": [
+          {
+            "memberSession": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "See summary"
+          },
+          "422": {
+            "description": "See summary"
+          },
+          "401": {
+            "description": "Problem details",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Problem details",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Problem details",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/public-record/filing-routes/{id}": {
+      "post": {
+        "summary": "approve | reject | reverify (records reviewer/admin other than proposer)",
+        "security": [
+          {
+            "memberSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "See summary"
+          },
+          "404": {
+            "description": "See summary"
+          },
+          "409": {
+            "description": "See summary"
+          },
+          "422": {
+            "description": "See summary"
+          },
+          "401": {
+            "description": "Problem details",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Problem details",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Problem details",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/public-record/trusted-hosts": {
+      "get": {
+        "summary": "Trusted official hosts",
+        "security": [
+          {
+            "memberSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "See summary"
+          },
+          "401": {
+            "description": "Problem details",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Problem details",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Problem details",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Add an exact trusted host (admin)",
+        "security": [
+          {
+            "memberSession": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "See summary"
+          },
+          "422": {
+            "description": "See summary"
+          },
+          "401": {
+            "description": "Problem details",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Problem details",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Problem details",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {

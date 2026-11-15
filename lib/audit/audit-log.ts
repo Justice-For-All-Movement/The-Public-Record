@@ -9,10 +9,11 @@ import type {PoolClient} from "pg";
 export const auditActions=["draft_created","draft_updated","request_self_reported","agency_evidence_reviewed",
   "evidence_quarantined","evidence_scan_result","consent_granted","consent_revoked","publication_reviewed",
   "access_grant_changed","retention_requested","retention_resolved",
-  "session_started","session_ended","draft_adopted","lifecycle_event_recorded","notification_preference_changed"] as const;
+  "session_started","session_ended","draft_adopted","lifecycle_event_recorded","notification_preference_changed",
+  "template_version_saved","template_version_reviewed","filing_route_proposed","filing_route_reviewed","trusted_host_added"] as const;
 export type AuditAction=typeof auditActions[number];
 export const auditObjectKinds=["request_draft","request_event","quarantine_object","publication_consent",
-  "publication_derivative","retention_request","role_grant","session","lifecycle_event","member_account","notification_preference"] as const;
+  "publication_derivative","retention_request","role_grant","session","lifecycle_event","member_account","notification_preference","request_template","filing_route","trusted_host"] as const;
 export type AuditObjectKind=typeof auditObjectKinds[number];
 export interface AuditEntry {
   owner:string;actor:string;action:AuditAction;objectKind:AuditObjectKind;objectId:string;sha256?:string|null;

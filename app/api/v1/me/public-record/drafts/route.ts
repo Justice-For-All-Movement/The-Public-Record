@@ -1,5 +1,5 @@
 import type {NextRequest} from "next/server";
-import {findPublishedTemplate} from "../../../../../../lib/adoption/templates";
+import {findCatalogTemplate} from "../../../../../../lib/server/catalog";
 import {BadRequest,json,problem,readJson} from "../../../../../../lib/server/http";
 import {canUseOwnDraft} from "../../../../../../lib/server/auth-context";
 import {idempotencyKeyFrom,withMember} from "../../../../../../lib/server/member-route";
@@ -19,7 +19,7 @@ export function POST(req:NextRequest){
     if(!body || typeof body!=="object" || Object.keys(body).some(k=>k!=="templateId"))throw new BadRequest("Only templateId may be supplied");
     let template=null;
     if(body.templateId!==undefined && body.templateId!==null){
-      template=findPublishedTemplate(body.templateId);
+      template=await findCatalogTemplate(body.templateId);
       if(!template)return problem(404,"Template not found or not published");
     }
     const {draft,replayed}=await ctx.drafts.create(ctx.session,template,idempotencyKeyFrom(req));

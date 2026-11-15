@@ -18,7 +18,12 @@ type AccessResource =
   | {kind:"case_note";owner:string;assignedEditors:readonly string[]}
   | {kind:"publication_candidate";owner:string;assignedReviewers:readonly string[];ownerGrantedReview:boolean}
   | {kind:"audit_index"}
-  | {kind:"role_assignment"};
+  | {kind:"role_assignment"}
+  /** TPR-17: author is the editor who created the version; null for a new template. */
+  | {kind:"request_template";author:string|null}
+  /** TPR-12: proposer of a filing route version; null for a new proposal. */
+  | {kind:"filing_route";proposer:string|null}
+  | {kind:"trusted_host_list"};
 
 function has(p:Principal,role:Role){return p.roles.includes(role);}
 function authenticated(p:Principal) {
@@ -63,6 +68,23 @@ export function authorize(p:Principal,action:Action,resource:AccessResource):boo
   }
   if(resource.kind==="audit_index"){
     return action==="read" && (has(p,"admin")||has(p,"operator"));
+  }
+  if(resource.kind==="request_template"){
+    // Editors author; publication needs a DIFFERENT editor or a records reviewer.
+    if(action==="create")return has(p,"editor");
+    if(action==="update")return has(p,"editor") && resource.author===p.subject;
+    if(action==="review"||action==="publish")
+      return (has(p,"editor")||has(p,"records_reviewer")) && resource.author!==null && resource.author!==p.subject;
+    return false;
+  }
+  if(resource.kind==="filing_route"){
+    if(action==="create")return has(p,"editor")||has(p,"records_reviewer");
+    if(action==="review")
+      return (has(p,"records_reviewer")||has(p,"admin")) && resource.proposer!==null && resource.proposer!==p.subject;
+    return false;
+  }
+  if(resource.kind==="trusted_host_list"){
+    return action==="manage" && has(p,"admin");
   }
   if(resource.kind==="role_assignment"){
     // No in-band path for granting privileged roles. Separate offline bootstrap.
