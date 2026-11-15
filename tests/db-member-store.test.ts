@@ -68,7 +68,7 @@ describe.skipIf(!base)("PostgreSQL member store under the runtime role",()=>{
   it("computes effective consent from the latest event in SQL",async()=>{
     await owner.query("INSERT INTO tpr_private.request_drafts(id,owner_subject) VALUES('d','fake|lin')");
     await owner.query(`INSERT INTO tpr_private.quarantine_objects(id,draft_id,owner_subject,private_storage_key,sha256)
-      VALUES('q','d','fake|lin','private/quarantine/v1/q',$1)`,["c".repeat(64)]);
+      VALUES('q','d','fake|lin','private/quarantine/v1/cccccccccccccccccccccccccccccccc/00000000-0000-4000-8000-000000000002',$1)`,["c".repeat(64)]);
     await owner.query(`INSERT INTO tpr_private.consent_events(owner_subject,quarantine_object_id,scope,event_action,recorded_at)
       VALUES('fake|lin','q','web_publication','granted',now()-interval '1 hour'),('fake|lin','q','web_publication','revoked',now())`);
     const r=await withSubject(sess("fake|lin"),db=>db.query(EFFECTIVE_CONSENT_SQL));

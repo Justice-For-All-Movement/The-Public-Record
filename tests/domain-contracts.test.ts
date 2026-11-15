@@ -52,7 +52,8 @@ describe("safe external API projections",()=>{
       "/api/v1/me/public-record/drafts/{id}","/api/v1/me/public-record/requests/{id}/events","/api/v1/me/public-record/audit",
       "/api/v1/public-record/records/search","/api/v1/me/public-record/notifications","/api/internal/jobs/run",
       "/api/v1/admin/public-record/templates","/api/v1/admin/public-record/templates/{id}/{version}","/api/v1/admin/public-record/filing-routes",
-      "/api/v1/admin/public-record/filing-routes/{id}","/api/v1/admin/public-record/trusted-hosts"]);
+      "/api/v1/admin/public-record/filing-routes/{id}","/api/v1/admin/public-record/trusted-hosts",
+      "/api/v1/me/public-record/requests/{id}/uploads","/api/v1/me/public-record/requests/{id}/uploads/{objectId}"]);
     // Every member route requires the server session; none accepts a client-chosen subject.
     for(const [path,item] of Object.entries(openapi.paths))if(path.startsWith("/api/v1/me/")||path.startsWith("/api/v1/admin/"))
       for(const [method,o] of Object.entries(item as Record<string,{security?:unknown}>))if(method!=="parameters")

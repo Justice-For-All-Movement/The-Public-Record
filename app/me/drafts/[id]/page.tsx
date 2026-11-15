@@ -7,7 +7,10 @@ import {lintDraft} from "../../../../lib/adoption/draft-lint";
 import {rebuildLifecycle,clockInputFromProjection,verificationWords} from "../../../../lib/lifecycle/projection";
 import {computeFoiaClock} from "../../../../lib/clock/foia-clock";
 import {createFederalCalendar} from "../../../../lib/clock/federal-calendar";
-import {AppealLetterBuilder,DraftEditor,EventRecorder,ExportPanel,ProofCheck} from "../../../../components/member-actions";
+import {AppealLetterBuilder,DraftEditor,EventRecorder,ExportPanel,ProofCheck,UploadPanel} from "../../../../components/member-actions";
+import {uploadServices} from "../../../../lib/server/storage";
+import {withSubject} from "../../../../lib/server/db";
+import {listUploads} from "../../../../lib/storage/uploads";
 import {exportMemberDraft} from "../../../../lib/templates/member-export";
 import "../../../public-record/prepare/print.css";
 import {feeStatus} from "../../../../lib/lifecycle/fees";
@@ -35,6 +38,8 @@ export default async function DraftPage({params}:{params:Promise<{id:string}>}){
   const d=clock.determination;
   const fees=feeStatus(projection.history.filter(h=>h.effective).map(h=>h.effective!),draft.feeCapUsd);
   const appeal=appealAssistance(projection,clock);
+  const uploadsOn=uploadServices().ok && auth.ctx.store.kind==="postgres";
+  const uploads=uploadsOn?await withSubject(auth.ctx.session,db=>listUploads(db,id)):[];
   const guide=buildSelfFilingGuide(draft.agencyComponentRef,await filingRegistry());
   return <main style={{maxWidth:900,margin:"auto",padding:"48px 20px"}}>
     <div className="nonprint"><Link href="/me">← My requests</Link></div>
@@ -71,6 +76,10 @@ export default async function DraftPage({params}:{params:Promise<{id:string}>}){
       <AppealLetterBuilder suggested={appeal.suggestedGrounds} input={{agencyLabel:draft.agencyLabel,
         trackingNumber:projection.facts.agencyTrackingNumber,requestTitle:draft.title,determinationOn:appeal.determinationOn!}}/>
       <p style={{fontSize:14,color:"#465451"}}>This is general information, not legal advice. The Public Record does not file appeals for you.</p>
+    </section>}
+    {uploadsOn && <section style={box} aria-labelledby="uploads" className="nonprint"><h2 id="uploads">Private documents</h2>
+      <p>Files are checked, malware-scanned and stored encrypted. Only you can download them. Nothing here is published.</p>
+      <UploadPanel requestId={id} uploads={uploads}/>
     </section>}
     <section style={box} aria-labelledby="timeline" className="nonprint"><h2 id="timeline">Timeline</h2>
       {projection.conflicts.length>0 && <ul role="alert">{projection.conflicts.map((c,i)=><li key={i}>{c.message}</li>)}</ul>}

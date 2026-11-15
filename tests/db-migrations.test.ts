@@ -6,7 +6,7 @@ import {tmpdir} from "node:os";
 import path from "node:path";
 
 const connectionString=process.env.TEST_DATABASE_URL;
-const MIGRATIONS=["0001_core.sql","0002_audit_consent.sql","0003_runtime_role.sql","0004_request_lifecycle.sql","0005_identity_roles_audit.sql","0006_member_drafts.sql","0007_outbox_notifications.sql","0008_reviewed_registry.sql"];
+const MIGRATIONS=["0001_core.sql","0002_audit_consent.sql","0003_runtime_role.sql","0004_request_lifecycle.sql","0005_identity_roles_audit.sql","0006_member_drafts.sql","0007_outbox_notifications.sql","0008_reviewed_registry.sql","0009_quarantine_uploads.sql"];
 describe.skipIf(!connectionString)("PostgreSQL initial migration and privacy constraints",()=>{
   const db=new pg.Client({connectionString});
   beforeAll(async()=>{
@@ -81,7 +81,7 @@ describe.skipIf(!connectionString)("PostgreSQL initial migration and privacy con
     await db.query(`INSERT INTO tpr_private.quarantine_objects
       (id,draft_id,owner_subject,private_storage_key,sha256)
       VALUES($1,$2,$3,$4,$5)`,
-      ["private-fixture","fixture-draft","subject-A","private/quarantine/v1/fixture-fixture","b".repeat(64)]);
+      ["private-fixture","fixture-draft","subject-A","private/quarantine/v1/"+"f".repeat(32)+"/00000000-0000-4000-8000-000000000001","b".repeat(64)]);
     await db.query(`INSERT INTO tpr_private.consent_events
       (owner_subject,quarantine_object_id,scope,event_action)
       VALUES($1,$2,$3,$4),($1,$2,$3,$5)`,

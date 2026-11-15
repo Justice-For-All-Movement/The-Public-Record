@@ -195,3 +195,25 @@ export function ActionButton({url,body,label}:{url:string;body:Record<string,unk
     setStatus(res.ok?"Done":await problemText(res));if(res.ok)router.refresh();
   }}>{label}</button> <span aria-live="polite">{status}</span></span>;
 }
+
+/** Private, scanned uploads for a request (TPR-28). Files never become public here. */
+export function UploadPanel({requestId,uploads}:{requestId:string;uploads:{id:string;mime:string;sizeBytes:number;purpose:string;createdAt:string;sha256:string}[]}){
+  const router=useRouter();
+  const [status,setStatus]=useState(""),[purpose,setPurpose]=useState("correspondence");
+  return <div>
+    <label>Purpose <select style={control} value={purpose} onChange={e=>setPurpose(e.target.value)}>
+      <option value="correspondence">Agency letter or email</option><option value="receipt">Filing receipt</option>
+      <option value="released_record">Records the agency released</option></select></label>
+    <label style={{display:"block",marginTop:8}}>File (PDF, text, PNG, JPEG, DOCX, XLSX; max 25 MB)
+      <input type="file" accept=".pdf,.txt,.png,.jpg,.jpeg,.docx,.xlsx" onChange={async e=>{
+        const f=e.target.files?.[0];if(!f)return;
+        setStatus("Checking and storing privately…");
+        const body=new FormData();body.set("file",f);body.set("purpose",purpose);
+        const res=await fetch(`/api/v1/me/public-record/requests/${requestId}/uploads`,{method:"POST",body});
+        setStatus(res.ok?"Stored privately after scanning.":await problemText(res));e.target.value="";router.refresh();
+      }}/></label>
+    <p aria-live="polite">{status}</p>
+    <ul>{uploads.map(u=><li key={u.id}><a href={`/api/v1/me/public-record/requests/${requestId}/uploads/${u.id}`}>{u.purpose.replace(/_/g," ")} · {u.mime} · {Math.ceil(u.sizeBytes/1024)} KB</a>
+      {" "}<small>sha256:{u.sha256.slice(0,12)}… · {u.createdAt.slice(0,10)}</small></li>)}</ul>
+  </div>;
+}
