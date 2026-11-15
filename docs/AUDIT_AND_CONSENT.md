@@ -10,6 +10,10 @@
 
 RLS is **forced** on all three tables, with owner-scoped policies using the transaction-local trusted identity. `UPDATE` and `DELETE` on audit/consent events are rejected by database triggers; updates to a mutable derived view may never rewrite this source history. The database owner/superuser can still alter triggers or backups: this is database append-only enforcement, not an independent cryptographic immutability guarantee.
 
+## Emission (TPR-10 wiring)
+
+`lib/audit/audit-log.ts` records typed audit rows inside the same transaction as the business change (`MemberStore.transaction`). Migration 0005 adds `session_started`, `session_ended`, `draft_adopted` and `lifecycle_event_recorded`. Entries are validated: object ids are opaque identifiers, fingerprints must be SHA-256, there is no free text. Members can read their own trail; the runtime role cannot update or delete it. `lib/audit/consent.ts` derives **current effective consent** from the latest event per (object, scope), and distributed replication counts only while web publication consent is effective. `lib/server/log.ts` emits allow-listed structured log fields with token/email/connection-string redaction.
+
 ## Required follow-up enforcement
 
 1. Server routes must emit an audit event for every restricted action in the *same authorized transaction* as the business mutation.

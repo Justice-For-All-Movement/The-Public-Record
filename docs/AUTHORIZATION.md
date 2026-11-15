@@ -1,6 +1,11 @@
 # TPR-08 — Authorization rules and server-owned role grants
 
-**Current implementation:** domain policy and transaction-scoping helper, not a production authorization gateway.
+**Current implementation:** domain policy enforced in authenticated route handlers (`lib/server/auth-context.ts`), server-owned role grants, and RLS under a non-owner runtime role.
+
+- **Principal:** subject from the verified session cookie only; roles = `requester` (every verified member, for their own records) ∪ current grants from the append-only `tpr_private.role_grant_events` for the same issuer (latest event per role wins). Identity-token claims and request bodies never contribute roles.
+- **No self-escalation:** the runtime role has `SELECT` only on role grants; grants are provisioned by the database owner out of band (`INSERT ... actor_subject, reason`, actor ≠ subject). Tested in `tests/db-member-store.test.ts`.
+- **CSRF:** mutations require a same-origin `Origin` (or `PUBLIC_ORIGIN` exactly) and refuse cross-site `Sec-Fetch-Site`, on top of `SameSite=Lax` `__Host-` cookies.
+- **Database:** private work runs in `withPrivateSubject` with `SET LOCAL ROLE tpr_app_runtime` (when configured) and refuses roles that are superuser or `BYPASSRLS`.
 
 ## Default denial
 
