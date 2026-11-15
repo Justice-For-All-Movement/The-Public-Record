@@ -2,6 +2,7 @@
 import {useState} from "react";
 import {useRouter} from "next/navigation";
 import {checkProof,proofReference,sha256Hex} from "../lib/filing/proof-fingerprint";
+import {draftAppealLetter,type AppealGround} from "../lib/appeals/appeal-assistant";
 
 const key=()=>Array.from(crypto.getRandomValues(new Uint8Array(18)),b=>b.toString(16).padStart(2,"0")).join("");
 async function problemText(res:Response){
@@ -63,7 +64,10 @@ const eventChoices:{type:string;label:string;payload?:Record<string,unknown>}[]=
   {type:"clarification_requested",label:"Agency asked a clarifying question"},
   {type:"clarification_answered",label:"I answered the agency's question"},
   {type:"fee_estimate_received",label:"Agency sent a fee estimate"},
-  {type:"fee_response_sent",label:"I responded about fees",payload:{decision:"accepted"}},
+  {type:"fee_response_sent",label:"I agreed to pay fees (up to an amount)",payload:{decision:"accepted"}},
+  {type:"fee_response_sent",label:"I narrowed the request because of fees",payload:{decision:"narrowed"}},
+  {type:"fee_response_sent",label:"I declined the estimated fees",payload:{decision:"declined"}},
+  {type:"fee_response_sent",label:"I asked for a fee waiver or reduction",payload:{decision:"waiver_requested"}},
   {type:"extension_notice",label:"Agency sent a written 10-day extension notice",payload:{workingDays:10,writtenNotice:true}},
   {type:"interim_release",label:"Agency released some records"},
   {type:"final_determination",label:"Final response: records released in full",payload:{outcome:"full_grant"}},
@@ -78,6 +82,7 @@ export function EventRecorder({requestId,confirmation}:{requestId:string;confirm
   const today=new Date().toISOString().slice(0,10);
   const [choice,setChoice]=useState(0),[on,setOn]=useState(today),[docRef,setDocRef]=useState(""),[status,setStatus]=useState("");
   const [confirmed,setConfirmed]=useState(false),[tracking,setTracking]=useState(""),[proof,setProof]=useState("");
+  const [amount,setAmount]=useState("");
   const [idem,setIdem]=useState(key);
   const c=eventChoices[choice];
   const fingerprint=async(file:File|undefined)=>{
@@ -88,7 +93,10 @@ export function EventRecorder({requestId,confirmation}:{requestId:string;confirm
   const submit=async()=>{
     setStatus("Recording…");
     const ref=proof||docRef.trim();
-    const payload={...(c.payload??{}),...(c.type==="acknowledged" && tracking.trim()?{agencyTrackingNumber:tracking.trim()}:{})};
+    const money=amount.trim()===""?undefined:Math.round(Number(amount)*100)/100;
+    const payload={...(c.payload??{}),...(c.type==="acknowledged" && tracking.trim()?{agencyTrackingNumber:tracking.trim()}:{}),
+      ...(c.type==="fee_estimate_received" && money!==undefined?{amountUsd:money}:{}),
+      ...(c.type==="fee_response_sent" && c.payload?.decision==="accepted" && money!==undefined?{acceptedMaxUsd:money}:{})};
     const res=await fetch(`/api/v1/me/public-record/requests/${requestId}/events`,{method:"POST",
       headers:{"Content-Type":"application/json","Idempotency-Key":idem},
       body:JSON.stringify({type:c.type,occurredOn:on,payload,
@@ -96,12 +104,15 @@ export function EventRecorder({requestId,confirmation}:{requestId:string;confirm
         ...(c.type==="filed"?{selfFilingConfirmation:confirmed?confirmation:""}:{})})});
     if(!res.ok){setStatus(await problemText(res));return;}
     setStatus("Recorded. It stays labeled as reported by you until a reviewer verifies agency evidence.");
-    setIdem(key());setProof("");setConfirmed(false);router.refresh();
+    setIdem(key());setProof("");setConfirmed(false);setAmount("");router.refresh();
   };
   return <form onSubmit={e=>{e.preventDefault();void submit();}} style={{display:"grid",gap:10}}>
     <label>What happened?<select style={control} value={choice} onChange={e=>setChoice(Number(e.target.value))}>
       {eventChoices.map((x,i)=><option key={i} value={i}>{x.label}</option>)}</select></label>
     <label>Date it happened<input style={control} type="date" max={today} value={on} onChange={e=>setOn(e.target.value)}/></label>
+    {(c.type==="fee_estimate_received" || (c.type==="fee_response_sent" && c.payload?.decision==="accepted")) &&
+      <label>{c.type==="fee_estimate_received"?"Estimated fee (USD)":"Most you agree to pay (USD)"}
+        <input style={control} type="number" min={0} step={0.01} value={amount} onChange={e=>setAmount(e.target.value)}/></label>}
     {c.type==="acknowledged" && <label>Agency tracking number (optional)<input style={control} maxLength={64} value={tracking} onChange={e=>setTracking(e.target.value)}/></label>}
     <label>Private receipt fingerprint (optional). The file is hashed in your browser and never uploaded.
       <input type="file" onChange={e=>void fingerprint(e.target.files?.[0])}/></label>
@@ -123,4 +134,24 @@ export function ProofCheck({reference}:{reference:string}){
       const r=checkProof(reference,await sha256Hex(await f.arrayBuffer()));
       setResult(r==="matches"?"Matches: the file is unchanged.":"Does not match: this is a different or modified file.");
     }}/> <span aria-live="polite">{result}</span></label>;
+}
+
+const GROUND_LABELS:Record<string,string>={search_adequacy:"The search may have missed records",exemptions:"Withholdings or redactions",
+  no_records:"\"No records\" response",fees:"Fees or fee category",expedite:"Expedited processing denied",other:"Other reason"};
+/** Builds an editable appeal letter locally; the participant files it themselves. */
+export function AppealLetterBuilder({input,suggested}:{input:{agencyLabel:string|null;trackingNumber:string|null;requestTitle:string;determinationOn:string};suggested:string[]}){
+  const [grounds,setGrounds]=useState<string[]>(suggested.length?suggested:["other"]);
+  const [explanation,setExplanation]=useState("");
+  const [copied,setCopied]=useState("");
+  let text="";
+  try{text=draftAppealLetter({...input,grounds:grounds as AppealGround[],explanation});}catch{text="";}
+  return <div style={{display:"grid",gap:10}}>
+    <fieldset><legend>Why are you appealing?</legend>
+      {Object.keys(GROUND_LABELS).map(g=><label key={g} style={{display:"block"}}><input type="checkbox" checked={grounds.includes(g)}
+        onChange={e=>setGrounds(e.target.checked?[...grounds,g]:grounds.filter(x=>x!==g))}/> {GROUND_LABELS[g]}</label>)}
+    </fieldset>
+    <label>Your explanation (optional)<textarea style={control} rows={4} maxLength={4000} value={explanation} onChange={e=>setExplanation(e.target.value)}/></label>
+    {text && <><pre style={{whiteSpace:"pre-wrap",background:"#f4f6f5",padding:12,borderRadius:8,fontFamily:"inherit"}}>{text}</pre>
+      <div><button type="button" onClick={async()=>{await navigator.clipboard.writeText(text);setCopied("Copied. Review it, then send it yourself as the agency's letter instructs.");}}>Copy letter</button> <span aria-live="polite">{copied}</span></div></>}
+  </div>;
 }
