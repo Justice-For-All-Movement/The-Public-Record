@@ -7,10 +7,10 @@ const required=["package-lock.json","README.md","CONTRIBUTING.md","SECURITY.md",
   "fixtures/investigations.synthetic.json","app/page.tsx"];
 for(const path of required)if(!existsSync(resolve(root,path)))throw Error("Missing required file: "+path);
 const manifest=readFileSync(resolve(root,".exechub/project.yml"),"utf8");
-if(!/planned_prs:\s*52/.test(manifest)||!/repository:\s*neophilism\/The-Public-Record/.test(manifest))
+if(!/planned_prs:\s*52/.test(manifest)||!/repository:\s*Justice-For-All-Movement\/The-Public-Record/.test(manifest))
   throw Error("Roadmap scope or repository mismatch");
 const mapping=JSON.parse(readFileSync(resolve(root,".exechub/approved-pr-mapping.json"),"utf8"));
-if(mapping.sourceRepository!=="neophilism/The-Public-Record" ||
+if(mapping.sourceRepository!=="Justice-For-All-Movement/The-Public-Record" ||
   mapping.roadmapVersion!==1 || mapping.pullRequestNumbers?.length!==52 ||
   new Set(mapping.pullRequestNumbers.filter(Number.isInteger)).size !==
     mapping.pullRequestNumbers.filter(Number.isInteger).length)

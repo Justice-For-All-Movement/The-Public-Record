@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "repository": "neophilism/The-Public-Record",
+  "repository": "Justice-For-All-Movement/The-Public-Record",
   "updatedAt": "2026-10-12T13:18:45.298Z",
   "standard": {
-    "repository": "neophilism/End-To-End-Everywhere-Security-Architecture-Standard",
+    "repository": "Justice-For-All-Movement/End-To-End-Everywhere-Security-Architecture-Standard",
     "commit": "8441335f359c6e446f9bfe8b959f9606ce341409",
     "basis": "development"
   },
