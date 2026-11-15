@@ -93,3 +93,19 @@ export async function resetPoolForTests():Promise<void> {
   const p=holder.__tprPool;holder.__tprPool=null;
   if(p)await p.end();
 }
+
+/** Read-only access to public reference data under the runtime role (no subject). */
+export async function withPublicDb<T>(fn:(db:PoolClient)=>Promise<T>):Promise<T> {
+  const p=getPool();
+  if(!p)throw new DatabaseUnavailableError();
+  const client=await p.connect();
+  try{
+    await client.query("BEGIN READ ONLY");
+    const role=config().databaseRuntimeRole;
+    if(role)await client.query(`SET LOCAL ROLE ${role}`);
+    const out=await fn(client);
+    await client.query("COMMIT");
+    return out;
+  }catch(e){await client.query("ROLLBACK").catch(()=>{});throw e;}
+  finally{client.release();}
+}

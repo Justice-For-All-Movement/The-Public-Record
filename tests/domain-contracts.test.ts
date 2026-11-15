@@ -50,9 +50,11 @@ describe("safe external API projections",()=>{
     expect(Object.keys(openapi.paths)).toEqual(["/api/health","/api/ready","/api/auth/login","/api/auth/callback",
       "/api/auth/logout","/api/auth/session","/api/v1/public-record/templates","/api/v1/me/public-record/drafts",
       "/api/v1/me/public-record/drafts/{id}","/api/v1/me/public-record/requests/{id}/events","/api/v1/me/public-record/audit",
-      "/api/v1/public-record/records/search","/api/v1/me/public-record/notifications","/api/internal/jobs/run"]);
+      "/api/v1/public-record/records/search","/api/v1/me/public-record/notifications","/api/internal/jobs/run",
+      "/api/v1/admin/public-record/templates","/api/v1/admin/public-record/templates/{id}/{version}","/api/v1/admin/public-record/filing-routes",
+      "/api/v1/admin/public-record/filing-routes/{id}","/api/v1/admin/public-record/trusted-hosts"]);
     // Every member route requires the server session; none accepts a client-chosen subject.
-    for(const [path,item] of Object.entries(openapi.paths))if(path.startsWith("/api/v1/me/"))
+    for(const [path,item] of Object.entries(openapi.paths))if(path.startsWith("/api/v1/me/")||path.startsWith("/api/v1/admin/"))
       for(const [method,o] of Object.entries(item as Record<string,{security?:unknown}>))if(method!=="parameters")
         expect(o.security).toEqual([{memberSession:[]}]);
     expect(JSON.stringify(openapi.components.schemas.PublicQuestion)).not.toContain("submitter_contact");

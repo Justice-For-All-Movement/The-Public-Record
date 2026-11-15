@@ -13,9 +13,8 @@ import "../../../public-record/prepare/print.css";
 import {feeStatus} from "../../../../lib/lifecycle/fees";
 import {appealAssistance} from "../../../../lib/appeals/appeal-assistant";
 import {buildSelfFilingGuide} from "../../../../lib/filing/self-filing-guide";
-import {filingRegistry} from "../../../../lib/filing/registry";
+import {filingRegistry} from "../../../../lib/server/catalog";
 import {isProofReference} from "../../../../lib/filing/proof-fingerprint";
-import {config} from "../../../../lib/server/config";
 
 export const dynamic="force-dynamic";
 export const metadata:Metadata={title:"Draft | The Public Record",robots:{index:false}};
@@ -36,7 +35,7 @@ export default async function DraftPage({params}:{params:Promise<{id:string}>}){
   const d=clock.determination;
   const fees=feeStatus(projection.history.filter(h=>h.effective).map(h=>h.effective!),draft.feeCapUsd);
   const appeal=appealAssistance(projection,clock);
-  const guide=buildSelfFilingGuide(draft.agencyComponentRef,filingRegistry(config().stage));
+  const guide=buildSelfFilingGuide(draft.agencyComponentRef,await filingRegistry());
   return <main style={{maxWidth:900,margin:"auto",padding:"48px 20px"}}>
     <div className="nonprint"><Link href="/me">← My requests</Link></div>
     <h1 className="nonprint" style={{marginBottom:4}}>{draft.title||"Untitled request"}</h1>
