@@ -48,6 +48,11 @@ describe("lifecycle projection",()=>{
     expect(p.status!.label).not.toMatch(/confirm/);
     expect(clockInputFromProjection(p,"2026-01-20")).toMatchObject({receivedOn:"2026-01-05",receiptBasis:"requester_estimate"});
   });
+  it("does not let a later adoption hide a backdated filing",()=>{
+    const p=rebuildLifecycle("req-001",[ev("adopted","2026-11-15",{templateId:"tpl-x",templateVersion:1}),filed]);
+    expect(p.status!.stage).toBe("filed");
+    expect(rebuildLifecycle("req-001",[ev("adopted","2026-11-15",{})]).status!.stage).toBe("adopted");
+  });
   it("holds events whose cause has not arrived yet, then applies them",()=>{
     const early=rebuildLifecycle("req-001",[filed,ans]);
     expect(early.history.find(h=>h.event.id===ans.id)!.state).toBe("awaiting_cause");

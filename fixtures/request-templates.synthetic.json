@@ -1,0 +1,49 @@
+{
+  "synthetic": true,
+  "source": "synthetic-fixture-not-real",
+  "notice": "Fictional templates for development and previews. Agencies, components and records are invented.",
+  "templates": [
+    {
+      "templateId": "tpl-fictional-contract-notices",
+      "version": 2,
+      "title": "Contract notices for a fictional facilities program",
+      "agencyComponentId": "0f6c1d2e-3a4b-4c5d-8e9f-a0b1c2d3e4f5",
+      "agencyLabel": "Fictional Department of Examples — Facilities Office (synthetic)",
+      "recordsDescription": "Copies of contract award notices, statements of work and modification records for the fictional Example Facilities Modernization program.",
+      "rangeStart": "2024-01-01",
+      "rangeEnd": "2025-12-31",
+      "state": "published",
+      "editorId": "fixture-editor-1",
+      "reviewerId": "fixture-reviewer-1",
+      "sourceIds": ["fixture-document-001"]
+    },
+    {
+      "templateId": "tpl-fictional-guidance-memos",
+      "version": 1,
+      "title": "Guidance memoranda about a fictional records policy",
+      "agencyComponentId": "1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d",
+      "agencyLabel": "Fictional Records Administration — Policy Unit (synthetic)",
+      "recordsDescription": "Final guidance memoranda and transmittal emails issued about the fictional Sample Records Retention Policy, including attachments.",
+      "rangeStart": "2023-06-01",
+      "rangeEnd": "2024-06-30",
+      "state": "published",
+      "editorId": "fixture-editor-2",
+      "reviewerId": "fixture-reviewer-1",
+      "sourceIds": []
+    },
+    {
+      "templateId": "tpl-fictional-inspection-logs",
+      "version": 1,
+      "title": "Inspection logs (draft awaiting review)",
+      "agencyComponentId": "2b3c4d5e-6f7a-4b8c-9d0e-1f2a3b4c5d6e",
+      "agencyLabel": "Fictional Safety Bureau (synthetic)",
+      "recordsDescription": "Inspection logs and summary reports for the fictional Example Harbor facility during the stated period.",
+      "rangeStart": null,
+      "rangeEnd": null,
+      "state": "in_review",
+      "editorId": "fixture-editor-1",
+      "reviewerId": null,
+      "sourceIds": []
+    }
+  ]
+}

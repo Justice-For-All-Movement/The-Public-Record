@@ -1,7 +1,7 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "The Public Record — API contract baseline",
+    "title": "The Public Record \u2014 API contract baseline",
     "version": "0.1.0",
     "description": "Schemas for planned domain contracts. Only /api/health is currently implemented; other endpoints are not advertised as live."
   },
@@ -22,6 +22,403 @@
             }
           }
         }
+      }
+    },
+    "/api/ready": {
+      "get": {
+        "summary": "Readiness of configured dependencies (no secrets)",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "503": {
+            "description": "See summary"
+          }
+        }
+      }
+    },
+    "/api/auth/login": {
+      "get": {
+        "summary": "Start sign-in (authorization code + PKCE); 303 to the identity provider",
+        "responses": {
+          "303": {
+            "description": "See summary"
+          },
+          "503": {
+            "description": "See summary"
+          }
+        }
+      }
+    },
+    "/api/auth/callback": {
+      "get": {
+        "summary": "Complete sign-in; sets the session cookie; 303 to a same-site path",
+        "responses": {
+          "303": {
+            "description": "See summary"
+          }
+        }
+      }
+    },
+    "/api/auth/logout": {
+      "post": {
+        "summary": "Revoke the session server-side and clear the cookie",
+        "responses": {
+          "303": {
+            "description": "See summary"
+          },
+          "403": {
+            "description": "See summary"
+          }
+        }
+      }
+    },
+    "/api/auth/session": {
+      "get": {
+        "summary": "Current member: subject, server-owned roles, expiry",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/public-record/templates": {
+      "get": {
+        "summary": "Public work cards for reviewed, published templates (synthetic fixture catalog)",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/me/public-record/drafts": {
+      "get": {
+        "summary": "List the member's private drafts",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Problem details",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Problem details",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "memberSession": []
+          }
+        ]
+      },
+      "post": {
+        "summary": "Adopt a published template (pinned copy) or start a blank draft",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "201": {
+            "description": "OK"
+          },
+          "404": {
+            "description": "See summary"
+          },
+          "422": {
+            "description": "See summary"
+          },
+          "401": {
+            "description": "Problem details",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Problem details",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "memberSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{16,128}$"
+            }
+          }
+        ]
+      }
+    },
+    "/api/v1/me/public-record/drafts/{id}": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "get": {
+        "summary": "Get one private draft with advisory lint",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "404": {
+            "description": "See summary"
+          },
+          "401": {
+            "description": "Problem details",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Problem details",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "memberSession": []
+          }
+        ]
+      },
+      "patch": {
+        "summary": "Update a draft with optimistic concurrency",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "404": {
+            "description": "See summary"
+          },
+          "412": {
+            "description": "See summary"
+          },
+          "422": {
+            "description": "See summary"
+          },
+          "428": {
+            "description": "See summary"
+          },
+          "401": {
+            "description": "Problem details",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Problem details",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "memberSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "If-Match",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^\"v[0-9]+\"$"
+            }
+          }
+        ]
+      }
+    },
+    "/api/v1/me/public-record/requests/{id}/events": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "get": {
+        "summary": "Lifecycle history, rebuilt projection and timing estimate",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "404": {
+            "description": "See summary"
+          },
+          "401": {
+            "description": "Problem details",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Problem details",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "memberSession": []
+          }
+        ]
+      },
+      "post": {
+        "summary": "Append a participant-reported or document-backed lifecycle event (never reviewer-verified)",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "201": {
+            "description": "OK"
+          },
+          "404": {
+            "description": "See summary"
+          },
+          "422": {
+            "description": "See summary"
+          },
+          "401": {
+            "description": "Problem details",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Problem details",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "memberSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{16,128}$"
+            }
+          }
+        ]
+      }
+    },
+    "/api/v1/me/public-record/audit": {
+      "get": {
+        "summary": "The member's own privacy-safe activity trail",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Problem details",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Problem details",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "memberSession": []
+          }
+        ]
       }
     }
   },
@@ -243,6 +640,14 @@
             "type": "string"
           }
         }
+      }
+    },
+    "securitySchemes": {
+      "memberSession": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "__Host-tpr_session",
+        "description": "HttpOnly server session set by /api/auth/callback. Mutations also require a same-origin Origin header."
       }
     }
   }

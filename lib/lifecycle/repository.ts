@@ -36,12 +36,20 @@ export async function appendParticipantEvent(db:PoolClient,owner:string,requestI
   assertParticipantMayRecord(input);
   // Validate with placeholder server fields before touching the database.
   validateEvent({...input,id:"pending-id",requestId,recordedAt:new Date().toISOString()} as LifecycleEvent);
+  const uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  for(const ref of [input.causedBy,input.correctsEventId])
+    if(ref!==null && !uuid.test(ref))throw new LifecycleEventError("Unknown cause or corrected event");
   const r=await db.query<Row>(`INSERT INTO tpr_private.request_lifecycle_events
     (request_id,owner_subject,event_type,occurred_on,asserted_by,verification,evidence_ref,caused_by,corrects_event_id,payload,idempotency_key)
     VALUES($1,$2,$3,$4::date,$5,$6,$7,$8::uuid,$9::uuid,$10::jsonb,$11)
     ON CONFLICT (owner_subject,request_id,idempotency_key) DO NOTHING RETURNING ${columns}`,
     [requestId,owner,input.type,input.occurredOn,input.assertedBy,input.verification,input.evidenceRef,
-      input.causedBy,input.correctsEventId,JSON.stringify(input.payload),idempotencyKey]);
+      input.causedBy,input.correctsEventId,JSON.stringify(input.payload),idempotencyKey])
+    .catch((error:{code?:string})=>{
+      // Links must reference an existing event of the same request and owner.
+      if(error?.code==="23503")throw new LifecycleEventError("Unknown cause or corrected event");
+      throw error;
+    });
   if(r.rows[0])return {event:toEvent(r.rows[0]),replayed:false};
   const prior=await db.query<Row>(`SELECT ${columns} FROM tpr_private.request_lifecycle_events
     WHERE owner_subject=$1 AND request_id=$2 AND idempotency_key=$3`,[owner,requestId,idempotencyKey]);
