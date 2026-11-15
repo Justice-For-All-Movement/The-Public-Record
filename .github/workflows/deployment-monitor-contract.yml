@@ -8,7 +8,8 @@ on:
 permissions:
   contents: read
 jobs:
-  # The shared validator is not resolvable at Justice-For-All-Movement/Development-Deployment-Monitor
-  # from this repository yet (run fails at startup); keep the working reference until it is.
+  # NOTE (2026-11-15): this reusable workflow currently fails at startup from this
+  # repository under both the old and new owner paths; the Development-Deployment-Monitor
+  # repository must grant workflow access (or be published) to Justice-For-All-Movement.
   contract:
-    uses: neophilism/Development-Deployment-Monitor/.github/workflows/validate-client.yml@main
+    uses: Justice-For-All-Movement/Development-Deployment-Monitor/.github/workflows/validate-client.yml@main
