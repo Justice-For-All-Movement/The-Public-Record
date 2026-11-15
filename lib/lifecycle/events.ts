@@ -31,7 +31,8 @@ export interface LifecyclePayloads {
   clarification_requested:Record<string,never>;
   clarification_answered:Record<string,never>;
   fee_estimate_received:{amountUsd?:number};
-  fee_response_sent:{decision:"accepted"|"narrowed"|"declined"|"waiver_requested"};
+  /** acceptedMaxUsd: the most the participant explicitly agreed to pay. */
+  fee_response_sent:{decision:"accepted"|"narrowed"|"declined"|"waiver_requested";acceptedMaxUsd?:number};
   extension_notice:{workingDays:number;writtenNotice:boolean};
   alternative_timeframe_agreed:{agreedOn:IsoDate|null};
   expedite_requested:Record<string,never>;
@@ -89,7 +90,9 @@ export function validatePayload(type:LifecycleEventType,payload:unknown):void {
         (p.agencyTrackingNumber===undefined || (typeof p.agencyTrackingNumber==="string" && /^[A-Za-z0-9 ._/-]{1,64}$/.test(p.agencyTrackingNumber)));
       case "fee_estimate_received":return onlyKeys(p,["amountUsd"]) &&
         (p.amountUsd===undefined || (typeof p.amountUsd==="number" && Number.isFinite(p.amountUsd) && p.amountUsd>=0 && p.amountUsd<=1e7));
-      case "fee_response_sent":return onlyKeys(p,["decision"]) && ["accepted","narrowed","declined","waiver_requested"].includes(p.decision as string);
+      case "fee_response_sent":return onlyKeys(p,["decision","acceptedMaxUsd"]) && ["accepted","narrowed","declined","waiver_requested"].includes(p.decision as string) &&
+        (p.acceptedMaxUsd===undefined || (p.decision==="accepted" && typeof p.acceptedMaxUsd==="number" && Number.isFinite(p.acceptedMaxUsd) &&
+          p.acceptedMaxUsd>=0 && p.acceptedMaxUsd<=1e7));
       case "extension_notice":return onlyKeys(p,["workingDays","writtenNotice"]) && Number.isSafeInteger(p.workingDays) &&
         (p.workingDays as number)>=1 && (p.workingDays as number)<=60 && typeof p.writtenNotice==="boolean";
       case "alternative_timeframe_agreed":return onlyKeys(p,["agreedOn"]) && (p.agreedOn===null || isValidIsoDate(p.agreedOn));

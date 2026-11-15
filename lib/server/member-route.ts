@@ -1,5 +1,6 @@
 import type {NextRequest,NextResponse} from "next/server";
 import {LifecycleEventError} from "../lifecycle/events";
+import {FeeDecisionError} from "../lifecycle/fees";
 import {validateIdempotencyKey} from "../contracts/request-options";
 import {resolveAuth,sessionCookieValue,type AuthContext} from "./auth-context";
 import {BadRequest,problem,sameOriginMutation} from "./http";
@@ -20,7 +21,7 @@ export async function withMember(req:NextRequest,route:string,
     if(!auth.ok)return auth.status===401?problem(401,"Sign in required"):problem(503,"Member features are not available in this deployment");
     return await handler({...auth.ctx,drafts:draftStoreFor(auth.ctx.store)});
   }catch(error){
-    if(error instanceof DraftValidationError||error instanceof LifecycleEventError||error instanceof BadRequest)
+    if(error instanceof DraftValidationError||error instanceof LifecycleEventError||error instanceof BadRequest||error instanceof FeeDecisionError)
       return problem(422,"Invalid request",error.message);
     logEvent({event:"member_route_error",route,reason:error instanceof Error?error.name:"unknown"});
     return problem(503,"Member services are temporarily unavailable");

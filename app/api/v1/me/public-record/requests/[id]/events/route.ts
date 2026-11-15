@@ -6,6 +6,7 @@ import {BadRequest,json,problem,readJson} from "../../../../../../../../lib/serv
 import {canUseOwnDraft} from "../../../../../../../../lib/server/auth-context";
 import {idempotencyKeyFrom,withMember} from "../../../../../../../../lib/server/member-route";
 import {SELF_FILING_CONFIRMATION} from "../../../../../../../../lib/filing/self-filing-guide";
+import {assertFeeResponseAllowed} from "../../../../../../../../lib/lifecycle/fees";
 import type {NewLifecycleEvent} from "../../../../../../../../lib/lifecycle/repository";
 
 export const dynamic="force-dynamic";
@@ -41,6 +42,12 @@ export function POST(req:NextRequest,{params}:Params){
       throw new BadRequest("Confirm that you submitted the request yourself");
     if(typeof input.occurredOn==="string" && input.occurredOn>new Date().toISOString().slice(0,10))
       throw new BadRequest("Events cannot be dated in the future");
+    if(input.type==="fee_response_sent"){
+      // TPR-26: never record acceptance of fees above the participant's ceiling without an explicit maximum.
+      const [draft,events]=await Promise.all([ctx.drafts.get(ctx.session,id),ctx.drafts.listEvents(ctx.session,id)]);
+      if(!draft || !events)return problem(404,"Request not found");
+      assertFeeResponseAllowed(events,draft.feeCapUsd,input);
+    }
     const result=await ctx.drafts.appendEvent(ctx.session,id,input,idempotencyKeyFrom(req));
     if(!result)return problem(404,"Request not found");
     return json(result,{status:result.replayed?200:201});

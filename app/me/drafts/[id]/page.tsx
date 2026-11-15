@@ -7,7 +7,9 @@ import {lintDraft} from "../../../../lib/adoption/draft-lint";
 import {rebuildLifecycle,clockInputFromProjection,verificationWords} from "../../../../lib/lifecycle/projection";
 import {computeFoiaClock} from "../../../../lib/clock/foia-clock";
 import {createFederalCalendar} from "../../../../lib/clock/federal-calendar";
-import {DraftEditor,EventRecorder,ProofCheck} from "../../../../components/member-actions";
+import {AppealLetterBuilder,DraftEditor,EventRecorder,ProofCheck} from "../../../../components/member-actions";
+import {feeStatus} from "../../../../lib/lifecycle/fees";
+import {appealAssistance} from "../../../../lib/appeals/appeal-assistant";
 import {buildSelfFilingGuide} from "../../../../lib/filing/self-filing-guide";
 import {filingRegistry} from "../../../../lib/filing/registry";
 import {isProofReference} from "../../../../lib/filing/proof-fingerprint";
@@ -30,6 +32,8 @@ export default async function DraftPage({params}:{params:Promise<{id:string}>}){
   const clock=computeFoiaClock(clockInputFromProjection(projection,new Date().toISOString().slice(0,10)),calendar);
   const lint=lintDraft(draft);
   const d=clock.determination;
+  const fees=feeStatus(projection.history.filter(h=>h.effective).map(h=>h.effective!),draft.feeCapUsd);
+  const appeal=appealAssistance(projection,clock);
   const guide=buildSelfFilingGuide(draft.agencyComponentRef,filingRegistry(config().stage));
   return <main style={{maxWidth:900,margin:"auto",padding:"48px 20px"}}>
     <Link href="/me">← My requests</Link>
@@ -52,6 +56,18 @@ export default async function DraftPage({params}:{params:Promise<{id:string}>}){
       <ul>{clock.notes.map(n=><li key={n}>{n}</li>)}</ul>
       <p style={{fontSize:14,color:"#465451"}}>{clock.disclaimer}</p>
     </section>
+    {fees.state!=="no_estimate" && <section style={box} aria-labelledby="fees"><h2 id="fees">Fees</h2>
+      <p role={fees.state==="above_ceiling_awaiting_decision"?"alert":undefined}>{fees.message}</p>
+      <p style={{fontSize:14,color:"#465451"}}>Your ceiling is a limit you set, not a promise that you will owe nothing. Change it in the draft above if you decide to.</p>
+    </section>}
+    {appeal.eligible && <section style={box} aria-labelledby="appeal"><h2 id="appeal">Appeal or mediation options</h2>
+      <p>{appeal.reason}</p>{appeal.windowText && <p>{appeal.windowText}</p>}
+      {appeal.alreadyAppealed && <p>You have recorded an appeal for this request.</p>}
+      <ul>{appeal.resources.map(r=><li key={r.url}><a href={r.url} rel="noopener noreferrer" target="_blank">{r.label}</a></li>)}</ul>
+      <AppealLetterBuilder suggested={appeal.suggestedGrounds} input={{agencyLabel:draft.agencyLabel,
+        trackingNumber:projection.facts.agencyTrackingNumber,requestTitle:draft.title,determinationOn:appeal.determinationOn!}}/>
+      <p style={{fontSize:14,color:"#465451"}}>This is general information, not legal advice. The Public Record does not file appeals for you.</p>
+    </section>}
     <section style={box} aria-labelledby="timeline"><h2 id="timeline">Timeline</h2>
       {projection.conflicts.length>0 && <ul role="alert">{projection.conflicts.map((c,i)=><li key={i}>{c.message}</li>)}</ul>}
       <ol>{projection.history.map(h=><li key={h.event.id+h.state} style={{marginBottom:6}}>

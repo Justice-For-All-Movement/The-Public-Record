@@ -92,6 +92,15 @@ describe.each(modes)("member drafts API ($name)",({db})=>{
     expect(view.clock.verificationLevel).toBe("approximate");
     expect(view.clock.determination.dueOn).toBe("2026-02-03");
   });
+  it("refuses to record accepting fees above the ceiling without an explicit maximum",async()=>{
+    const path=`/api/v1/me/public-record/requests/${draftId}/events`;
+    expect((await postEvent(jsonReq(path,"POST",ada,{type:"fee_estimate_received",occurredOn:"2026-01-08",payload:{amountUsd:180}}),params(draftId))).status).toBe(201);
+    const refused=await postEvent(jsonReq(path,"POST",ada,{type:"fee_response_sent",occurredOn:"2026-01-09",payload:{decision:"accepted"}}),params(draftId));
+    expect(refused.status).toBe(422);
+    expect((await refused.json()).detail).toMatch(/above your ceiling/);
+    expect((await postEvent(jsonReq(path,"POST",ada,{type:"fee_response_sent",occurredOn:"2026-01-09",
+      payload:{decision:"accepted",acceptedMaxUsd:180}}),params(draftId))).status).toBe(201);
+  });
   it("keeps a private activity trail of restricted actions",async()=>{
     const trail=await (await audit(req("/x",{jar:ada}))).json();
     const actions=trail.events.map((e:{action:string})=>e.action);
