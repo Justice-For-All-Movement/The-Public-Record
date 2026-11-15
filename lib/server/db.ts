@@ -6,19 +6,20 @@ import {config} from "./config";
 import {withPrivateSubject,type ServerVerifiedSubject} from "../auth/private-transaction";
 import type {PoolClient} from "pg";
 
-let pool:pg.Pool|null=null;
+const holder=globalThis as typeof globalThis & {__tprPool?:pg.Pool|null};
 
 /** Returns null when no database is configured; callers must degrade gracefully. */
 export function getPool():pg.Pool|null {
   const url=config().databaseUrl;
   if(!url)return null;
-  if(!pool){
-    pool=new pg.Pool({connectionString:url,max:5,idleTimeoutMillis:30000,
+  if(!holder.__tprPool){
+    const pool=new pg.Pool({connectionString:url,max:5,idleTimeoutMillis:30000,
       connectionTimeoutMillis:5000,statement_timeout:10000,application_name:"the-public-record"});
     // Never let an idle-client network error crash the process.
     pool.on("error",()=>{});
+    holder.__tprPool=pool;
   }
-  return pool;
+  return holder.__tprPool;
 }
 
 /** Runs private work bound to a verified subject under row-level security. */
@@ -89,6 +90,6 @@ export async function checkDatabase():Promise<DatabaseReadiness> {
 
 /** Tests only: close and forget the shared pool. */
 export async function resetPoolForTests():Promise<void> {
-  const p=pool;pool=null;
+  const p=holder.__tprPool;holder.__tprPool=null;
   if(p)await p.end();
 }

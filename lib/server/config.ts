@@ -29,6 +29,8 @@ export interface RuntimeConfig {
   aggregatorUrl:string|null;
   aggregatorFixtures:boolean;
   allowPrivilegedDbRole:boolean;
+  /** Exact browser origin for CSRF checks, e.g. https://records.example.org (optional). */
+  publicOrigin:string|null;
 }
 
 type Env = Record<string,string|undefined>;
@@ -105,14 +107,17 @@ export function loadConfig(env:Env=process.env):RuntimeConfig {
     authMode,authProblem,oidc,
     aggregatorUrl:httpsUrl(clean(env.FOIA_AGGREGATOR_PUBLIC_URL)),
     aggregatorFixtures:env.FOIA_AGGREGATOR_FIXTURES==="true" && stage!=="production",
-    allowPrivilegedDbRole:env.TPR_ALLOW_PRIVILEGED_DB_ROLE==="true" && (stage==="local"||stage==="test")
+    allowPrivilegedDbRole:env.TPR_ALLOW_PRIVILEGED_DB_ROLE==="true" && (stage==="local"||stage==="test"),
+    publicOrigin:(()=>{const u=httpsUrl(clean(env.PUBLIC_ORIGIN));return u?new URL(u).origin:null;})()
   };
 }
 
-let cached:RuntimeConfig|null=null;
+// Cached on globalThis: route bundles must share one config (and one
+// ephemeral local secret) even if a module is instantiated more than once.
+const holder=globalThis as typeof globalThis & {__tprConfig?:RuntimeConfig|null};
 export function config():RuntimeConfig {
-  if(!cached)cached=loadConfig();
-  return cached;
+  if(!holder.__tprConfig)holder.__tprConfig=loadConfig();
+  return holder.__tprConfig;
 }
 /** Tests only. */
-export function resetConfigForTests(next?:RuntimeConfig):void {cached=next??null;}
+export function resetConfigForTests(next?:RuntimeConfig):void {holder.__tprConfig=next??null;}

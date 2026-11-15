@@ -1,6 +1,11 @@
 # TPR-07 — Parent identity integration contract
 
-**Status:** cryptographically verified OIDC primitives, with synthetic-provider tests. No live account enrollment, identity provider or production session endpoint is enabled.
+**Status:** wired into the app. `/api/auth/login` → provider → `/api/auth/callback` → HttpOnly session; `/api/auth/logout` revokes server-side; `/api/auth/session` reports the signed-in member. Two providers sit behind one `IdentityProvider` interface (`lib/auth/providers.ts`), selected by `AUTH_PROVIDER`:
+
+- `oidc` — Justice For All (or any standards OIDC issuer): authorization code + PKCE S256, sealed single-use login transaction cookie (`__Host-tpr_login`, AES-256-GCM, 5 min), token exchange at the pinned same-origin token endpoint (`lib/auth/oidc-token-exchange.ts`, bounded, no redirects, access/refresh tokens discarded), ID token verified with the pinned JWKS. **Not yet registered with the parent provider.**
+- `fake` — synthetic identities for local/preview only (refused when the stage is production). It runs the same code-exchange and RS256 ID-token verification against an in-process issuer `https://fake-oidc.the-public-record.invalid` with an ephemeral key; subjects are `fake|<persona>`. The chooser page is `/auth/dev-login`.
+
+Sessions (`lib/auth/session.ts`, ≤15 min) are recorded in `tpr_private.app_sessions`; every request re-checks that the session exists, is unrevoked, unexpired, matches the account's first issuer and the account is active (`tpr_private.member_accounts`). Logout revokes the row, so a copied cookie stops working. Without a database, a non-production `fake` deployment uses a clearly labeled in-memory store that resets on restart.
 
 ## Trust boundaries
 
@@ -23,9 +28,9 @@ Test fixtures generate synthetic RSA signing keys inside the test process. No sa
 
 ## Remaining gates before TPR-07 can be accepted as operational
 
-1. Verify the actual parent identity provider metadata, client registration and trusted redirect URI.
-2. Implement backend authorization callback and code exchange with full PKCE/state transaction lifecycle and replay protection.
-3. Verify token claims against that provider, persisted session invalidation/logout, HTTP cookie handling, CSRF boundaries and account deletion.
+1. Register the Justice For All OIDC client (issuer, endpoints, redirect URI) and set the `OIDC_*` variables.
+2. Live test against that provider (claims, key rotation, logout); account deletion workflow.
+3. ~~Callback/code exchange, PKCE/state lifecycle, persisted revocation, cookie handling, CSRF~~ — implemented and tested in-process (`tests/auth-routes.test.ts`, `tests/identity-providers.test.ts`, `tests/db-member-store.test.ts`).
 4. Prove unauthenticated/private API denials, refresh/logout and provider failover behavior in a running deployed environment.
 5. Confirm E2EESA identity/authentication profile applicability and security-review evidence.
 
