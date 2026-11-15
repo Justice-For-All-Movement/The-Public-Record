@@ -54,6 +54,11 @@ jobs:
             fi
             node -e "const fs=require('node:fs'); const v=JSON.parse(fs.readFileSync('/tmp/tpr-health.json','utf8')); if(v.status!=='scaffold'||v.production_ready!==false) process.exit(1)"
       - run:
+          name: Readiness passes with no external services configured
+          command: |
+            curl --fail --silent --show-error http://127.0.0.1:3000/api/ready > /tmp/tpr-ready.json
+            node -e "const v=JSON.parse(require('node:fs').readFileSync('/tmp/tpr-ready.json','utf8')); if(v.ready!==true||v.checks.database!=='not_configured'||v.production_ready!==false) process.exit(1)"
+      - run:
           name: Stop disposable preview
           when: always
           command: docker rm -f public-record-preview || true

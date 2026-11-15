@@ -64,6 +64,29 @@ jobs:
             exit 1
           fi
           node -e "const fs=require('node:fs'); const v=JSON.parse(fs.readFileSync('/tmp/tpr-health.json','utf8')); if(v.status!=='scaffold'||v.production_ready!==false) process.exit(1)"
+      - name: Readiness passes with no external services configured
+        run: |
+          curl --fail --silent --show-error http://127.0.0.1:3000/api/ready > /tmp/tpr-ready.json
+          node -e "const v=JSON.parse(require('node:fs').readFileSync('/tmp/tpr-ready.json','utf8')); if(v.ready!==true||v.checks.database!=='not_configured'||v.production_ready!==false) process.exit(1)"
+      - name: Start disposable PostgreSQL and a database-backed preview on Render-style PORT
+        run: |
+          docker network create tpr-smoke
+          docker run -d --name tpr-smoke-db --network tpr-smoke -e POSTGRES_USER=tpr_ci -e POSTGRES_PASSWORD=fixture_only -e POSTGRES_DB=tpr_ci postgres:16-alpine
+          for attempt in $(seq 1 30); do docker exec tpr-smoke-db pg_isready -U tpr_ci -d tpr_ci && break; sleep 2; done
+          docker run -d --name public-record-db-preview --network tpr-smoke -p 127.0.0.1:10000:10000 \
+            -e PORT=10000 -e TPR_ENVIRONMENT=preview -e DATABASE_RUNTIME_ROLE=tpr_app_runtime \
+            -e DATABASE_URL=postgresql://tpr_ci:fixture_only@tpr-smoke-db:5432/tpr_ci public-record:ci
+      - name: Migrations run at start and readiness verifies schema and row security
+        run: |
+          success=0
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:10000/api/ready > /tmp/tpr-db-ready.json; then success=1; break; fi
+            sleep 2
+          done
+          if [ "$success" -ne 1 ]; then docker logs public-record-db-preview || true; cat /tmp/tpr-db-ready.json || true; exit 1; fi
+          node -e "const v=JSON.parse(require('node:fs').readFileSync('/tmp/tpr-db-ready.json','utf8')); const c=v.checks; if(v.ready!==true||c.database!=='ok'||c.migrations!=='ok'||c.row_security!=='ok') process.exit(1)"
       - name: Stop disposable preview
         if: always()
-        run: docker rm -f public-record-preview || true
+        run: |
+          docker rm -f public-record-preview public-record-db-preview tpr-smoke-db || true
+          docker network rm tpr-smoke || true

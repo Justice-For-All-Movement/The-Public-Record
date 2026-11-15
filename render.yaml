@@ -1,0 +1,53 @@
+# Render Blueprint for The Public Record (preview web service).
+# Creates nothing by itself: the lead applies it in the Justice For All Render
+# workspace. Secrets use sync:false so values are entered in the dashboard and
+# never committed. The service boots and serves public pages with none of them.
+services:
+  - type: web
+    name: the-public-record
+    runtime: docker
+    plan: free
+    region: oregon
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    # Readiness: 200 when every *configured* dependency works (DB reachable,
+    # migrations applied, runtime role subject to RLS, auth config valid).
+    healthCheckPath: /api/ready
+    autoDeployTrigger: checksPass
+    envVars:
+      - key: TPR_ENVIRONMENT
+        value: preview            # preview | staging | production
+      - key: AUTH_PROVIDER
+        value: disabled           # disabled | fake (never in production) | oidc
+      - key: DATABASE_RUNTIME_ROLE
+        value: tpr_app_runtime    # NOBYPASSRLS role created by migration 0003
+      - key: TPR_MIGRATE_ON_START
+        value: "true"
+      # --- Neon PostgreSQL (optional; enables member drafts and lifecycle tracking)
+      - key: DATABASE_URL         # pooled runtime connection string
+        sync: false
+      - key: MIGRATION_DATABASE_URL # optional direct/owner connection for migrations
+        sync: false
+      # --- Sessions (required for any sign-in mode)
+      - key: SESSION_SECRET       # base64url, >= 32 random bytes
+        sync: false
+      # --- Justice For All OIDC (only when AUTH_PROVIDER=oidc)
+      - key: OIDC_ISSUER
+        sync: false
+      - key: OIDC_CLIENT_ID
+        sync: false
+      - key: OIDC_CLIENT_SECRET
+        sync: false
+      - key: OIDC_REDIRECT_URI
+        sync: false
+      - key: OIDC_AUTHORIZATION_ENDPOINT
+        sync: false
+      - key: OIDC_TOKEN_ENDPOINT
+        sync: false
+      - key: OIDC_JWKS_URI
+        sync: false
+      # --- FOIA Aggregator public archive resolver (optional)
+      - key: FOIA_AGGREGATOR_PUBLIC_URL
+        sync: false
+      - key: FOIA_AGGREGATOR_FIXTURES
+        value: "true"             # synthetic fixtures; ignored when stage=production

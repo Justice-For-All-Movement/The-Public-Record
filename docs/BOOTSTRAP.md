@@ -15,7 +15,9 @@ npm run build
 npm run dev
 ```
 
-Open http://localhost:3000. GET /api/health reports `status=scaffold` and `production_ready=false`.
+Open http://localhost:3000. GET /api/health (liveness) reports `status=scaffold` and `production_ready=false`; GET /api/ready reports dependency readiness. Hosted deployment: [DEPLOYMENT.md](DEPLOYMENT.md).
+
+Local database tests need a disposable superuser connection, e.g. `TEST_DATABASE_URL=postgresql://tpr:tpr@127.0.0.1/tpr_test npm test` on a freshly created database.
 
 Only synthetic data from `fixtures/investigations.synthetic.json` may be used in tests. No real agency receipt, private uploaded evidence, or personal identifying data is included.
 
