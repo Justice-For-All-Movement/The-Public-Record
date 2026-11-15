@@ -49,7 +49,8 @@ describe("safe external API projections",()=>{
     expect(openapi.openapi).toBe("3.1.0");
     expect(Object.keys(openapi.paths)).toEqual(["/api/health","/api/ready","/api/auth/login","/api/auth/callback",
       "/api/auth/logout","/api/auth/session","/api/v1/public-record/templates","/api/v1/me/public-record/drafts",
-      "/api/v1/me/public-record/drafts/{id}","/api/v1/me/public-record/requests/{id}/events","/api/v1/me/public-record/audit"]);
+      "/api/v1/me/public-record/drafts/{id}","/api/v1/me/public-record/requests/{id}/events","/api/v1/me/public-record/audit",
+      "/api/v1/public-record/records/search"]);
     // Every member route requires the server session; none accepts a client-chosen subject.
     for(const [path,item] of Object.entries(openapi.paths))if(path.startsWith("/api/v1/me/"))
       for(const [method,o] of Object.entries(item as Record<string,{security?:unknown}>))if(method!=="parameters")
