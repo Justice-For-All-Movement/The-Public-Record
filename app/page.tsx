@@ -7,6 +7,11 @@ export default function Home(){return <main style={{maxWidth:880,margin:"auto",p
     Early development preview. Sign-in, private drafts and request tracking work only where this deployment is configured for them; private evidence uploads, agency integrations and archive publication are not enabled. The Public Record never files requests for you.
   </p>
   <section style={{border:"1px solid #c4ceca",padding:22,borderRadius:12,marginTop:25}}>
+    <h2>Check what has already been released</h2>
+    <p>Search the FOIA Aggregator public archive before filing. A missing result never means records don&apos;t exist.</p>
+    <p><Link href="/public-record/search">Search released records →</Link></p>
+  </section>
+  <section style={{border:"1px solid #c4ceca",padding:22,borderRadius:12,marginTop:18}}>
     <h2>Prepare your own FOIA request</h2>
     <p>Draft a records request locally, then verify the agency's instructions and file it yourself. Your draft isn't uploaded or saved by us.</p>
     <p><Link href="/public-record/prepare">Open private drafting preview →</Link></p>

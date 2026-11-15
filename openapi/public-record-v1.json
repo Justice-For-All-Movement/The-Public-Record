@@ -420,6 +420,31 @@
           }
         ]
       }
+    },
+    "/api/v1/public-record/records/search": {
+      "get": {
+        "summary": "Read-only FOIA Aggregator resolver; never treats a miss as absence of records",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 3,
+              "maxLength": 300
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resolver outcome with provenance, coverage warnings and fallbacks"
+          },
+          "400": {
+            "description": "Invalid query"
+          }
+        }
+      }
     }
   },
   "components": {
