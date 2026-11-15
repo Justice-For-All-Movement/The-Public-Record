@@ -5,12 +5,13 @@ import {clockInputFromProjection,rebuildLifecycle} from "../../../../../../../..
 import {BadRequest,json,problem,readJson} from "../../../../../../../../lib/server/http";
 import {canUseOwnDraft} from "../../../../../../../../lib/server/auth-context";
 import {idempotencyKeyFrom,withMember} from "../../../../../../../../lib/server/member-route";
+import {SELF_FILING_CONFIRMATION} from "../../../../../../../../lib/filing/self-filing-guide";
 import type {NewLifecycleEvent} from "../../../../../../../../lib/lifecycle/repository";
 
 export const dynamic="force-dynamic";
 type Params={params:Promise<{id:string}>};
 const calendar=createFederalCalendar();
-const fields=["type","occurredOn","assertedBy","verification","evidenceRef","causedBy","correctsEventId","payload"];
+const fields=["type","occurredOn","assertedBy","verification","evidenceRef","causedBy","correctsEventId","payload","selfFilingConfirmation"];
 
 export function GET(req:NextRequest,{params}:Params){
   return withMember(req,"events.list",async ctx=>{
@@ -35,6 +36,9 @@ export function POST(req:NextRequest,{params}:Params){
       verification:(body.verification??"self_reported") as NewLifecycleEvent["verification"],
       evidenceRef:(body.evidenceRef??null) as string|null,causedBy:(body.causedBy??null) as string|null,
       correctsEventId:(body.correctsEventId??null) as string|null,payload:(body.payload??{}) as NewLifecycleEvent["payload"]};
+    // TPR-21: recording a filing requires the participant's explicit self-filing affirmation.
+    if(input.type==="filed" && body.selfFilingConfirmation!==SELF_FILING_CONFIRMATION)
+      throw new BadRequest("Confirm that you submitted the request yourself");
     if(typeof input.occurredOn==="string" && input.occurredOn>new Date().toISOString().slice(0,10))
       throw new BadRequest("Events cannot be dated in the future");
     const result=await ctx.drafts.appendEvent(ctx.session,id,input,idempotencyKeyFrom(req));
