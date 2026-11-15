@@ -1,8 +1,8 @@
 {
   "sourceRepository": "Justice-For-All-Movement/The-Public-Record",
   "roadmapVersion": 1,
-  "mappingRevision": 4,
-  "note": "Accepted at repository/CI level: TPR-01..06 (TPR-05 via PRs #5, #8, #12; mapped to #12), TPR-08 (#59), TPR-19 (#60), TPR-23 (#58), TPR-24 (#57). Other merged work is partial pending external integration; see docs/IMPLEMENTATION_STATUS.md and registry/prs.json.",
+  "mappingRevision": 5,
+  "note": "Accepted at repository/CI level: TPR-01..06 (TPR-05 via PRs #5, #8, #12; mapped to #12), TPR-08 (#59), TPR-19 (#60), TPR-20 (#66, building on #23), TPR-23 (#58), TPR-24 (#57). Other merged work is partial pending external integration; see docs/IMPLEMENTATION_STATUS.md and registry/prs.json.",
   "pullRequestNumbers": [
     1,
     2,
@@ -23,7 +23,7 @@
     null,
     null,
     60,
-    null,
+    66,
     null,
     null,
     58,

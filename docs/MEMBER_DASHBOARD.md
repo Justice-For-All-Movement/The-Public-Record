@@ -6,6 +6,7 @@
 - **Adoption:** creates a private draft that copies the reviewed text and pins `template_id`/`template_version` (migration 0006). Later template revisions never change it. Creation is idempotent per owner and records an `adopted` lifecycle event plus `draft_adopted` audit row in the same transaction.
 - **Private saved drafts:** stored in `tpr_private.request_drafts` under forced RLS and the `tpr_app_runtime` role; only the owner can read or change them (cross-member attempts return 404). Updates require `If-Match` and fail with 412 on concurrent edits. Field validation is strict; drafting lint is advisory.
 - **Secure history:** lifecycle timeline with evidence wording, corrections and conflicts (TPR-23), the TPR-24 timing estimate, and the member's own activity trail (TPR-10).
+- **Export (TPR-20):** the draft page shows the exact final request text (`lib/templates/member-export.ts`) with copy, `.txt` download and print/save-as-PDF (print stylesheet hides everything else). It names the pinned template and version, contains no links, submission targets or hidden fields, and refuses to export until agency, scope and date range are complete.
 - **Legal identity:** not collected. Drafts contain no requester name/contact fields; participants add those only in the agency's own system when filing.
 - **Without a database:** a non-production deployment with `AUTH_PROVIDER=fake` uses an in-memory store (banner shown; resets on restart). Otherwise member pages explain that accounts are unavailable and link to the browser-only drafting tool.
 
