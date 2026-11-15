@@ -303,7 +303,10 @@
       "prs": [],
       "dependsOn": [],
       "externalDependencies": [],
-      "externalPrerequisites": []
+      "externalPrerequisites": [],
+      "contributingPrs": [
+        65
+      ]
     },
     {
       "id": "TPR-026",

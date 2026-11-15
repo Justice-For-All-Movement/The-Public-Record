@@ -31,6 +31,8 @@ Nothing is required. With no variables the service serves the public preview pag
 | `SESSION_SECRET` | Any sign-in (base64url, ≥32 random bytes) | — |
 | `AUTH_PROVIDER` | `disabled` (default), `fake` (synthetic identities; refused when stage is `production`), `oidc` | — |
 | `OIDC_ISSUER`, `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET`, `OIDC_REDIRECT_URI`, `OIDC_AUTHORIZATION_ENDPOINT`, `OIDC_TOKEN_ENDPOINT`, `OIDC_JWKS_URI` | `AUTH_PROVIDER=oidc`; endpoints must be HTTPS and share the issuer origin | Justice For All identity provider (not yet registered) |
+| `WORKER_TOKEN` | Outbox worker endpoint `POST /api/internal/jobs/run` (≥32 chars); unset = disabled | An external scheduler (e.g. a Render cron job, paid) |
+| `PUBLIC_ORIGIN` | Optional exact browser origin for CSRF checks (e.g. `https://records.example.org`) | — |
 | `FOIA_AGGREGATOR_PUBLIC_URL` | Live read-only archive search | FOIA Aggregator (no compatible JSON endpoint exists yet) |
 | `FOIA_AGGREGATOR_FIXTURES` | `true` to use the synthetic archive fixtures (ignored in production) | — |
 
@@ -51,3 +53,7 @@ Migrations run as the database owner. Private work runs under row-level security
 2. Optionally create a Neon project/branch in the Justice For All organization and paste its pooled URL into `DATABASE_URL`.
 3. Set `SESSION_SECRET`; set `AUTH_PROVIDER=fake` only for a clearly labeled non-production preview, or `oidc` once the Justice For All client is registered.
 4. Verify `/api/ready` shows `ready: true` and record evidence before claiming any deployment status.
+
+## Background jobs (TPR-25)
+
+Reminders are queued in `tpr_private.outbox_jobs` in the same transaction as the lifecycle event that produced them. Nothing runs them until an **authenticated external scheduler** calls `POST /api/internal/jobs/run` with `Authorization: Bearer $WORKER_TOKEN` (for example a Render cron job every 15 minutes: `curl -fsS -X POST -H "Authorization: Bearer $WORKER_TOKEN" https://<service>/api/internal/jobs/run`). Each pass leases up to 25 jobs (`FOR UPDATE SKIP LOCKED`, 120 s lease, exponential backoff, dead-letter after 5 attempts) under the `tpr_worker_runtime` role, which cannot read drafts, events, audit history or notification text. Render cron jobs are a paid service type, so none is declared in `render.yaml`.
