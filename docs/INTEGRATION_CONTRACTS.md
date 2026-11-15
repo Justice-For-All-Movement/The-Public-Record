@@ -11,6 +11,9 @@ Required response envelope: `contract_version`, `source`, `observed_at`, `covera
 
 Adapter status must distinguish `not_configured`, `unavailable`, `invalid_contract`, `available`. It must not invent search results on outage or parse arbitrary upstream HTML as JSON. Operational adapter authentication is undefined until an upstream endpoint exists.
 
+### Resolver (TPR-15)
+`lib/research/archive-resolver.ts` wraps the contract for `/public-record/search` and `GET /api/v1/public-record/records/search?q=`. Outcomes: `matches`, `no_matches_in_indexed_portion`, `not_configured`, `unavailable`, `incompatible_contract`, `invalid_query`. Each carries provenance (adapter, contract version, observed time, coverage), `exhaustive:false`, coverage warnings, per-record holding status (`archived_copy_with_hash` when a SHA-256 is present, otherwise `indexed_link_only`) and official fallback links. Every non-match outcome states that a missing result does not mean records don't exist (tested). Transports: `FOIA_AGGREGATOR_PUBLIC_URL` (pinned HTTPS, query-only, bounded streamed JSON, `credentials:"omit"`, no redirects; endpoint path is the proposed contract, **no compatible upstream endpoint is verified yet**) or `FOIA_AGGREGATOR_FIXTURES=true` (synthetic fixture; ignored in production).
+
 ## Other intended contracts
 - **Justice For All identity**: OIDC discovery, signed token verification and issuer/audience constraints; browser claims not directly accepted. TPR-07 implements.
 - **Engine Room**: repository roadmap `.exechub/project.yml` and explicitly mapped PR numbers; operational status output never includes participant content. TPR-45 implements.
