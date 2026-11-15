@@ -23,12 +23,12 @@ export function getPool():pg.Pool|null {
 }
 
 /** Runs private work bound to a verified subject under row-level security. */
-export async function withSubject<T>(session:ServerVerifiedSubject,fn:(db:PoolClient)=>Promise<T>):Promise<T> {
+export async function withSubject<T>(session:ServerVerifiedSubject,fn:(db:PoolClient)=>Promise<T>,roles?:readonly string[]):Promise<T> {
   const p=getPool();
   if(!p)throw new DatabaseUnavailableError();
   const cfg=config();
   return withPrivateSubject(p,session,fn,{runtimeRole:cfg.databaseRuntimeRole,
-    requireRowSecurity:!cfg.allowPrivilegedDbRole});
+    requireRowSecurity:!cfg.allowPrivilegedDbRole,roles});
 }
 export class DatabaseUnavailableError extends Error {
   constructor(){super("Database is not configured");this.name="DatabaseUnavailableError";}

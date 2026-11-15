@@ -9,6 +9,8 @@ export interface PrivateTransactionOptions {
   runtimeRole?:string|null;
   /** Refuse the transaction if the effective role is superuser or BYPASSRLS. */
   requireRowSecurity?:boolean;
+  /** Server-owned roles exposed to RLS policies as transaction-local `tpr.roles`. */
+  roles?:readonly string[];
 }
 export class PrivilegedDatabaseRoleError extends Error {
   constructor(){super("Private data access refused: database role bypasses row-level security");this.name="PrivilegedDatabaseRoleError";}
@@ -48,6 +50,10 @@ export async function withPrivateSubject<T>(
       if(!row || row.rolsuper!==false || row.rolbypassrls!==false)throw new PrivilegedDatabaseRoleError();
     }
     await client.query("SELECT set_config('tpr.subject',$1,true)",[session.subject]);
+    if(options.roles?.length){
+      if(options.roles.some(r=>!/^[a-z_]{3,32}$/.test(r)))throw new Error("Invalid role");
+      await client.query("SELECT set_config('tpr.roles',$1,true)",[options.roles.join(",")]);
+    }
     const result=await fn(client);
     await client.query("COMMIT");
     return result;
