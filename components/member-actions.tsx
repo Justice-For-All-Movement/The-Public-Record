@@ -165,3 +165,22 @@ export function ReminderToggle({enabled}:{enabled:boolean}){
     setStatus(res.ok?"Saved.":await problemText(res));router.refresh();
   }}/>In-app reminders before estimated dates <span aria-live="polite" style={{color:"#465451"}}>{status}</span></label>;
 }
+
+/** Copy / download / print the exact request text. Nothing is sent anywhere. */
+export function ExportPanel({result}:{result:{ready:true;text:string;filename:string}|{ready:false;problems:string[]}}){
+  const [status,setStatus]=useState("");
+  if(!result.ready)return <div><p>Before exporting, fix:</p><ul>{result.problems.map(p=><li key={p}>{p}</li>)}</ul></div>;
+  const download=()=>{
+    const url=URL.createObjectURL(new Blob([result.text],{type:"text/plain;charset=utf-8"}));
+    const a=document.createElement("a");a.href=url;a.download=result.filename;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
+  };
+  return <div>
+    <div className="nonprint" style={{display:"flex",gap:10,flexWrap:"wrap",marginBottom:10}}>
+      <button type="button" onClick={async()=>{await navigator.clipboard.writeText(result.text);setStatus("Copied.");}}>Copy text</button>
+      <button type="button" onClick={download}>Download .txt</button>
+      <button type="button" onClick={()=>window.print()}>Print or save as PDF</button>
+      <span aria-live="polite">{status}</span>
+    </div>
+    <section className="print-only-record"><pre style={{whiteSpace:"pre-wrap",overflowWrap:"anywhere",fontFamily:"inherit",background:"#f4f6f5",padding:12,borderRadius:8}}>{result.text}</pre></section>
+  </div>;
+}
