@@ -1,6 +1,6 @@
 # TPR-04 Public API and domain schema contract
 
-The schema baseline is [OpenAPI 3.1](../openapi/public-record-v1.json). It currently documents **only the actually implemented** `GET /api/health` endpoint. All other schemas are proposed contracts for future authenticated handlers and are not user-accessible API guarantees.
+The schema baseline is [OpenAPI 3.1](../openapi/public-record-v1.json). It documents the implemented endpoints: health/readiness, sign-in (`/api/auth/*`), public template work cards, and the member APIs for private drafts, lifecycle events and the member's own audit trail (TPR-07/08/10/19/23). Errors use `application/problem+json`. Member routes take identity only from the `__Host-tpr_session` cookie, require a same-origin `Origin` for mutations, support `Idempotency-Key` on creates (durable per owner, with conflicting-reuse detection) and `If-Match: "v<n>"` optimistic concurrency on draft updates. Remaining component schemas are proposed contracts.
 
 ## Invariants
 - Public questions contain **no private contact details, draft notes, user identity claims or unpublished correspondence**. The public field projection uses an explicit allowlist.

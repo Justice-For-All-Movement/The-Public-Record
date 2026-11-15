@@ -217,7 +217,11 @@ export function rebuildLifecycle(requestId:string,input:readonly LifecycleEvent[
 
   // 5. Current status = last stage-bearing effective event.
   let status:StatusView|null=null;
-  const last=[...effective].reverse().find(e=>stageOf[e.type]);
+  // Setup events (adopted/drafted) never override a substantive stage, even when a
+  // participant records an earlier-dated filing after adopting a template today.
+  const staged=effective.filter(e=>stageOf[e.type]);
+  const substantive=staged.filter(e=>e.type!=="adopted" && e.type!=="drafted");
+  const last=(substantive.length?substantive:staged).at(-1);
   if(last){
     const stage=stageOf[last.type]!;
     let label=stageWords[stage];
