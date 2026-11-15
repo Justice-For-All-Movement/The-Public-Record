@@ -8,11 +8,11 @@
 **Version:** 1.0 planning baseline  
 **Date:** October 10, 2026  
 **Status:** **Complete development specification; implementation is NOT asserted.**  
-**Recommended repository:** `neophilism/The-Public-Record` (create if absent; do not confuse this proposed name with an existing verified repository).  
+**Recommended repository:** `Justice-For-All-Movement/The-Public-Record` (create if absent; do not confuse this proposed name with an existing verified repository).  
 **Upstream platform:** Justice For All Core Platform (shared site/identity/navigation).  
-**Existing data dependency:** `neophilism/FOIA_Aggregator` (public document discovery and archive).  
-**Security reference:** `neophilism/End-To-End-Everywhere-Security-Architecture-Standard` (E2EESA).  
-**Portfolio observability:** `neophilism/Engine-Room`.
+**Existing data dependency:** `Justice-For-All-Movement/FOIA_Aggregator` (public document discovery and archive).  
+**Security reference:** `Justice-For-All-Movement/End-To-End-Everywhere-Security-Architecture-Standard` (E2EESA).  
+**Portfolio observability:** `Justice-For-All-Movement/Engine-Room`.
 
 > **Handoff rule:** Another developer or ChatGPT account must be able to execute the plan from this document and the named repositories without consulting earlier conversations, relying on memory, guessing what was approved, or treating an unimplemented proposal as finished software. Validate repository and deployment state at the start of every work session. Do not publish credentials.
 
@@ -814,11 +814,11 @@ The Public Record is not complete until **all** of the following are independent
 - DOJ OIP — Administrative appeals: https://www.justice.gov/oip/oip-guidance/oip-guidance-adjudicating-administrative-appeals-under-foia
 - DOJ OIP — FOIA & Privacy Act interface: https://www.justice.gov/oip/oip-guidance/oip-guidance-interface-between-foia-and-privacy-act
 - NARA OGIS — dispute resolution: https://www.archives.gov/ogis/mediation-program/request-assistance
-- FOIA Aggregator source and complete handoff: https://github.com/neophilism/FOIA_Aggregator and `docs/DEVELOPMENT_PLAN.md`
-- E2EESA standard and corrected remediation plan: https://github.com/neophilism/End-To-End-Everywhere-Security-Architecture-Standard and `docs/AUDIT_REMEDIATION_PLAN.md`
-- Engine Room implementation/integration: https://github.com/neophilism/Engine-Room and `docs/live-project-integration.md`
-- Send FOIA Log Requests: https://github.com/neophilism/Send_FOIA_Log_Requests (README checked; do not presume a deployed service)
-- FOIA Bias Analysis: https://github.com/neophilism/FOIA_Bias_Analysis
+- FOIA Aggregator source and complete handoff: https://github.com/Justice-For-All-Movement/FOIA_Aggregator and `docs/DEVELOPMENT_PLAN.md`
+- E2EESA standard and corrected remediation plan: https://github.com/Justice-For-All-Movement/End-To-End-Everywhere-Security-Architecture-Standard and `docs/AUDIT_REMEDIATION_PLAN.md`
+- Engine Room implementation/integration: https://github.com/Justice-For-All-Movement/Engine-Room and `docs/live-project-integration.md`
+- Send FOIA Log Requests: https://github.com/Justice-For-All-Movement/Send_FOIA_Log_Requests (README checked; do not presume a deployed service)
+- FOIA Bias Analysis: https://github.com/Justice-For-All-Movement/FOIA_Bias_Analysis
 
 **Freshness instruction:** Review current official pages, current GitHub heads, current data coverage and external provider contracts when work begins; this date is a planning baseline, not a perpetual guarantee.
 

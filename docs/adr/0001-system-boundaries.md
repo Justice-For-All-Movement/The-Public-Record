@@ -22,7 +22,7 @@ The Public Record owns public investigations, requester-directed draft/request s
 6. All third-party adapters start with explicit versions, schema validation, timeouts and safe errors. Unsupported versions must fail closed rather than reinterpret fields.
 
 ## FOIA Aggregator compatibility
-As inspected at initial integration, `neophilism/FOIA_Aggregator/ui/server.py` exposes search via the **HTML homepage**, record pages under `/record/{document_id}`, and archives under `/archive/{document_id}`. It does **not yet advertise a versioned public JSON search endpoint** suitable for this adapter. Therefore, the Public Record supplies an **internal contract and deterministic fake transport only**; enabling live service search requires an approved versioned upstream endpoint, tests and URL/configuration review. Do not scrape privileged endpoints or couple to the Aggregator's SQLite schema.
+As inspected at initial integration, `Justice-For-All-Movement/FOIA_Aggregator/ui/server.py` exposes search via the **HTML homepage**, record pages under `/record/{document_id}`, and archives under `/archive/{document_id}`. It does **not yet advertise a versioned public JSON search endpoint** suitable for this adapter. Therefore, the Public Record supplies an **internal contract and deterministic fake transport only**; enabling live service search requires an approved versioned upstream endpoint, tests and URL/configuration review. Do not scrape privileged endpoints or couple to the Aggregator's SQLite schema.
 
 ## Alternatives rejected
 - Reusing FOIA Aggregator's database directly: weakens isolation, creates writer/reader lifecycle races.

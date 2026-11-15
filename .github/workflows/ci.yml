@@ -38,6 +38,7 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: node --test registry/pr-contract.test.mjs
+      - run: node scripts/validate-pr-registry.mjs
       - run: npm run build
   container-smoke:
     needs: quality

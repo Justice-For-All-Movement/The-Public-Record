@@ -9,4 +9,4 @@ permissions:
   contents: read
 jobs:
   contract:
-    uses: neophilism/Development-Deployment-Monitor/.github/workflows/validate-client.yml@main
+    uses: Justice-For-All-Movement/Development-Deployment-Monitor/.github/workflows/validate-client.yml@main
