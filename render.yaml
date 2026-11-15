@@ -50,7 +50,8 @@ services:
       #     token from an external scheduler; endpoint is 404 when unset.
       - key: WORKER_TOKEN
         sync: false
-      # --- FOIA Aggregator public archive resolver (optional)
+      # --- FOIA Aggregator FC-13 catalog export (optional), origin only, e.g.
+      #     https://foia-aggregator-gjk5.onrender.com (overrides fixtures)
       - key: FOIA_AGGREGATOR_PUBLIC_URL
         sync: false
       - key: FOIA_AGGREGATOR_FIXTURES

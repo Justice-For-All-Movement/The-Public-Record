@@ -24,11 +24,11 @@ export default async function ArchiveSearch({searchParams}:{searchParams:Search}
     {result && <section aria-live="polite" style={{marginTop:24}}>
       <ul role="note" style={{background:"#eef2f0",padding:"12px 28px",borderRadius:8}}>{result.warnings.map(w=><li key={w}>{w}</li>)}</ul>
       {result.records.map(r=><article key={r.id} style={{border:"1px solid #c4ceca",borderRadius:10,padding:14,marginTop:12,background:"#fff"}}>
-        <h2 style={{fontSize:18,margin:0}}><a href={r.record_url} rel="noopener noreferrer nofollow">{r.title}</a></h2>
-        <p style={{margin:"6px 0",color:"#465451"}}>{r.agency}{r.published_at?` · released ${r.published_at.slice(0,10)}`:" · release date unknown"} · {holdingText[r.holding]}</p>
-        <p style={{margin:0,fontSize:14}}>Source: <a href={r.source_url} rel="noopener noreferrer nofollow">{new URL(r.source_url).hostname}</a></p>
+        <h2 style={{fontSize:18,margin:0}}><a href={r.recordUrl} rel="noopener noreferrer nofollow">{r.title}</a></h2>
+        <p style={{margin:"6px 0",color:"#465451"}}>{r.agency}{r.office?` — ${r.office}`:""}{r.publishedDate?` · published ${r.publishedDate}`:" · publication date not recorded"} · {holdingText[r.holding]}{r.textIndexed?" · text indexed":""}</p>
+        {r.sourceUrl && <p style={{margin:0,fontSize:14}}>Found at: <a href={r.sourceUrl} rel="noopener noreferrer nofollow">{new URL(r.sourceUrl).hostname}</a>{r.sourceProvenance==="third_party"?" (third-party source)":" (official source)"}</p>}
       </article>)}
-      {result.provenance.observedAt && <p style={{fontSize:14,color:"#465451"}}>Archive snapshot observed {result.provenance.observedAt.slice(0,10)} · coverage: {result.provenance.coverage?.replace(/_/g," ")}</p>}
+      {result.provenance.snapshotId && <p style={{fontSize:14,color:"#465451"}}>Catalog snapshot {result.provenance.snapshotId}{result.provenance.observedAt?` generated ${result.provenance.observedAt.slice(0,10)}`:""} · searched {result.provenance.searchedRecords} of {result.provenance.catalogRecords} entries · contract {result.provenance.contractVersion}</p>}
       <h2 style={{fontSize:18}}>Also check official sources</h2>
       <ul>{result.fallback.map(f=><li key={f.url}><a href={f.url}>{f.label}</a></li>)}</ul>
     </section>}

@@ -193,7 +193,7 @@
       "dependsOn": [],
       "externalDependencies": [],
       "externalPrerequisites": [
-        "FOIA Aggregator public JSON endpoint compatible with public-archive-search/v1, verified live"
+        "Live verification of the FC-13 catalog export against a non-empty FOIA Aggregator archive"
       ]
     },
     {
