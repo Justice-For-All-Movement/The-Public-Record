@@ -11,5 +11,10 @@ export default function Home(){return <main style={{maxWidth:880,margin:"auto",p
     <p>Draft a records request locally, then verify the agency's instructions and file it yourself. Your draft isn't uploaded or saved by us.</p>
     <p><Link href="/public-record/prepare">Open private drafting preview →</Link></p>
   </section>
+  <section style={{border:"1px solid #c4ceca",padding:22,borderRadius:12,marginTop:18}}>
+    <h2>Estimate FOIA response and appeal dates</h2>
+    <p>Working-day estimates that skip weekends and federal holidays and show their uncertainty.</p>
+    <p><Link href="/public-record/clock">Open the deadline estimator →</Link></p>
+  </section>
   <p style={{marginTop:36}}><a href="https://www.foia.gov/how-to.html">Official federal FOIA information</a></p>
 </main>}
