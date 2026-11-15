@@ -6,17 +6,18 @@ import {tmpdir} from "node:os";
 import path from "node:path";
 
 const connectionString=process.env.TEST_DATABASE_URL;
+const MIGRATIONS=["0001_core.sql","0002_audit_consent.sql","0003_runtime_role.sql"];
 describe.skipIf(!connectionString)("PostgreSQL initial migration and privacy constraints",()=>{
   const db=new pg.Client({connectionString});
   beforeAll(async()=>{
     await db.connect();
-    expect(await runMigrations(db)).toEqual(["0001_core.sql","0002_audit_consent.sql"]);
+    expect(await runMigrations(db)).toEqual(MIGRATIONS);
   });
   afterAll(async()=>{await db.end()});
   it("is idempotent and preserves migration digests",async()=>{
     expect(await runMigrations(db)).toEqual([]);
     const r=await db.query("SELECT name,sha256 FROM tpr_private.schema_migrations");
-    expect(r.rows).toHaveLength(2);
+    expect(r.rows).toHaveLength(MIGRATIONS.length);
     expect(r.rows[0].sha256).toMatch(/^[a-f0-9]{64}$/);
   });
   it("rolls back an attempted rewrite of an already-applied migration",async()=>{
@@ -25,7 +26,7 @@ describe.skipIf(!connectionString)("PostgreSQL initial migration and privacy con
       writeFileSync(path.join(dir,"0001_core.sql"),"-- an incompatible revision");
       await expect(runMigrations(db,dir)).rejects.toThrow("checksum changed");
       const r=await db.query("SELECT count(*)::int AS n FROM tpr_private.schema_migrations");
-      expect(r.rows[0].n).toBe(2);
+      expect(r.rows[0].n).toBe(MIGRATIONS.length);
     }finally{rmSync(dir,{recursive:true,force:true})}
   });
   it("keeps public citations attached to real questions",async()=>{

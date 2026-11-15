@@ -20,7 +20,9 @@ Set `DATABASE_URL` through an authorized secret store and explicitly run:
 npm run db:migrate
 ```
 
-The command does **not** create a cloud database or incur authorized paid storage. It does not run automatically at app startup. Do not use another project's database or credentials.
+The command does **not** create a cloud database or incur authorized paid storage. The production image (`scripts/start.mjs`) applies pending migrations at startup when `DATABASE_URL` is set, unless `TPR_MIGRATE_ON_START=false`; see [DEPLOYMENT.md](DEPLOYMENT.md). Do not use another project's database or credentials.
+
+Migration `0003_runtime_role.sql` creates the `NOLOGIN NOBYPASSRLS` group role `tpr_app_runtime` (no DELETE on private tables, insert-only history) and lets the migrating owner assume it. Private transactions refuse to run when the effective role is a superuser or has `BYPASSRLS`.
 
 ## Verification
 
