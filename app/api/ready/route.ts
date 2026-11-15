@@ -17,6 +17,7 @@ export async function GET(){
   if(db.database==="ok" && db.migrations!=="ok")failures.push("migrations_pending_or_drifted");
   if(db.database==="ok" && db.row_security==="failed")failures.push("database_role_bypasses_row_security");
   if(cfg.authProblem)failures.push("auth_misconfigured");
+  if(cfg.storage.problem)failures.push("storage_misconfigured");
   const ready=failures.length===0;
   return NextResponse.json({
     service:"the-public-record",
@@ -27,6 +28,7 @@ export async function GET(){
       ...db,
       auth:cfg.authProblem?"failed":(cfg.authMode==="disabled"?"not_configured":"ok"),
       auth_mode:cfg.authMode,
+      uploads:cfg.storage.problem?"failed":(cfg.storage.driver!=="none" && cfg.storage.scanner!=="none"?`${cfg.storage.driver}+${cfg.storage.scanner}`:"not_configured"),
       archive_resolver:cfg.aggregatorUrl?"configured":(cfg.aggregatorFixtures?"fixtures":"not_configured")
     },
     failures

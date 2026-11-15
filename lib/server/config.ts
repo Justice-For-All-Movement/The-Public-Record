@@ -31,6 +31,10 @@ export interface RuntimeConfig {
   allowPrivilegedDbRole:boolean;
   /** Exact browser origin for CSRF checks, e.g. https://records.example.org (optional). */
   publicOrigin:string|null;
+  /** TPR-09/28 private storage and scanning; uploads are disabled unless all are usable. */
+  storage:{driver:"none"|"memory"|"local"|"s3";dir:string|null;key:string|null;
+    s3:{endpoint:string;region:string;bucket:string;accessKeyId:string;secretAccessKey:string}|null;
+    scanner:"none"|"fake"|"clamav";clamav:{host:string;port:number}|null;problem:string|null};
   /** Bearer token for the internal job-runner endpoint (>= 32 chars); null disables it. */
   workerToken:string|null;
 }
@@ -110,6 +114,27 @@ export function loadConfig(env:Env=process.env):RuntimeConfig {
     aggregatorUrl:httpsUrl(clean(env.FOIA_AGGREGATOR_PUBLIC_URL)),
     aggregatorFixtures:env.FOIA_AGGREGATOR_FIXTURES==="true" && stage!=="production",
     allowPrivilegedDbRole:env.TPR_ALLOW_PRIVILEGED_DB_ROLE==="true" && (stage==="local"||stage==="test"),
+    storage:(()=>{
+      const requested=(clean(env.STORAGE_DRIVER)??"none").toLowerCase();
+      const scanner=(clean(env.MALWARE_SCANNER)??"none").toLowerCase();
+      let problem:string|null=null;
+      let driver:"none"|"memory"|"local"|"s3"=["memory","local","s3"].includes(requested)?requested as "memory"|"local"|"s3":"none";
+      let scan:"none"|"fake"|"clamav"=scanner==="fake"||scanner==="clamav"?scanner:"none";
+      if(stage==="production" && driver==="memory"){driver="none";problem="In-memory storage is never used in production.";}
+      if(stage==="production" && scan==="fake"){scan="none";problem="The fake malware scanner is never used in production.";}
+      const key=clean(env.PRIVATE_STORAGE_KEY);
+      const keyOk=!!key && /^[A-Za-z0-9_-]{43}$/.test(key) && Buffer.from(key,"base64url").length===32;
+      const s3=driver==="s3" && clean(env.S3_ENDPOINT) && clean(env.S3_BUCKET) && clean(env.S3_ACCESS_KEY_ID) && clean(env.S3_SECRET_ACCESS_KEY)
+        ?{endpoint:clean(env.S3_ENDPOINT)!,region:clean(env.S3_REGION)??"us-west-004",bucket:clean(env.S3_BUCKET)!,
+          accessKeyId:clean(env.S3_ACCESS_KEY_ID)!,secretAccessKey:clean(env.S3_SECRET_ACCESS_KEY)!}:null;
+      const port=Number(clean(env.CLAMAV_PORT)??"3310");
+      const clamav=scan==="clamav" && clean(env.CLAMAV_HOST)?{host:clean(env.CLAMAV_HOST)!,port}:null;
+      if(driver!=="none" && !keyOk)problem=problem??"PRIVATE_STORAGE_KEY (32 bytes base64url) is required for private storage.";
+      if(driver==="s3" && !s3)problem=problem??"S3_ENDPOINT, S3_BUCKET, S3_ACCESS_KEY_ID and S3_SECRET_ACCESS_KEY are required.";
+      if(driver==="local" && !clean(env.PRIVATE_STORAGE_DIR))problem=problem??"PRIVATE_STORAGE_DIR is required for local storage.";
+      if(scan==="clamav" && !clamav)problem=problem??"CLAMAV_HOST is required for the ClamAV scanner.";
+      return {driver,dir:clean(env.PRIVATE_STORAGE_DIR),key:keyOk?key:null,s3,scanner:scan,clamav,problem};
+    })(),
     workerToken:(()=>{const t=clean(env.WORKER_TOKEN);return t && t.length>=32 && t.length<=256 && /^[\x21-\x7e]+$/.test(t)?t:null;})(),
     publicOrigin:(()=>{const u=httpsUrl(clean(env.PUBLIC_ORIGIN));return u?new URL(u).origin:null;})()
   };

@@ -46,6 +46,25 @@ services:
         sync: false
       - key: OIDC_JWKS_URI
         sync: false
+      # --- Private uploads (optional; disabled unless storage + key + scanner work)
+      - key: STORAGE_DRIVER
+        value: none               # none | local | s3 (memory/fake never in production)
+      - key: PRIVATE_STORAGE_KEY
+        sync: false
+      - key: S3_ENDPOINT
+        sync: false
+      - key: S3_REGION
+        sync: false
+      - key: S3_BUCKET
+        sync: false
+      - key: S3_ACCESS_KEY_ID
+        sync: false
+      - key: S3_SECRET_ACCESS_KEY
+        sync: false
+      - key: MALWARE_SCANNER
+        value: none               # none | clamav
+      - key: CLAMAV_HOST
+        sync: false
       # --- Outbox worker (optional): POST /api/internal/jobs/run with this bearer
       #     token from an external scheduler; endpoint is 404 when unset.
       - key: WORKER_TOKEN

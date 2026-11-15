@@ -1,6 +1,15 @@
 # TPR-09 private object quarantine — initial capability contract
 
-**Current status:** signed, bounded capability tokens and mocked private-object interfaces; no Backblaze B2 integration, bucket, upload endpoint, malware scanner or production encryption attestation exists.
+**Current status (TPR-09/28):** private uploads work end to end behind interfaces, with credential-free drivers for development. **No live bucket or ClamAV daemon has been exercised**; production needs `STORAGE_DRIVER=s3` (Backblaze B2 S3-compatible) or another durable driver, a real scanner, and `PRIVATE_STORAGE_KEY`.
+
+## Implemented
+- `lib/storage/object-store.ts`: one `PrivateObjectStore` interface; drivers `memory` (tests/previews; refused in production), `local` (absolute `PRIVATE_STORAGE_DIR`, 0600 files, atomic writes, no path escape) and `s3` (SigV4, path-style, HTTPS only; signer verified against AWS's published example). Every driver stores **AES-256-GCM ciphertext** keyed per object via HKDF from `PRIVATE_STORAGE_KEY` and bound to the object key (moved/tampered ciphertext fails). Keys look like `private/quarantine/v1/<HMAC owner tag>/<uuid>`; no names or filenames. No method creates a public URL.
+- `lib/storage/inspection.ts`: server-side byte sniffing (PDF, PNG, JPEG, UTF-8 text, DOCX/XLSX), declared-vs-actual mismatch refusal, 25 MiB cap, PDF active content (`/JavaScript`, `/JS`, `/Launch`, `/EmbeddedFile`, `/XFA`, … including `#xx`-escaped names), Office macros/embedded binaries, ZIP central-directory checks (entries, total size, compression ratio → archive bombs).
+- `lib/storage/scanner.ts`: fake EICAR scanner (refused in production) and a ClamAV `clamd` INSTREAM client (`CLAMAV_HOST`/`CLAMAV_PORT`). Scanner errors fail closed; without a scanner uploads are disabled.
+- `lib/storage/uploads.ts` + `POST/GET /api/v1/me/public-record/requests/{id}/uploads[/{objectId}]`: owner of the draft only; inspect → scan → encrypt/store → record (migration 0009) → audit `evidence_quarantined`; rejected bytes are never stored (only SHA-256 + reason audited); downloads are owner-only, re-verify SHA-256, `attachment`, `no-store`, `nosniff`, `CSP sandbox`. Draft page shows a "Private documents" panel when enabled.
+
+## Original contract notes
+
 
 ## Storage ownership and privacy
 

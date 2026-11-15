@@ -12,7 +12,7 @@ A merged PR alone does not mean a package is accepted. Acceptance here means the
 | TPR-01–10 | Foundation, security, data | 10 | 7 | 3 (07, 09, 10) |
 | TPR-11–18 | Research and templates | 8 | 0 | 8 (11–18) |
 | TPR-19–27 | Citizen filing | 9 | 4 | 5 (21, 22, 25, 26, 27) |
-| TPR-28–32 | Documentary publication | 5 | 0 | 0 |
+| TPR-28–32 | Documentary publication | 5 | 0 | 1 (28) |
 | TPR-33–40 | Eight public actions | 8 | 0 | 0 |
 | TPR-41–46 | Platform integration | 6 | 0 | 0 |
 | TPR-47–52 | Production and verification | 6 | 0 | 1 partial (51: deploy config) |
@@ -39,7 +39,8 @@ A merged PR alone does not mean a package is accepted. Acceptance here means the
 | Work | PRs | Done | Blocking acceptance |
 |---|---|---|---|
 | TPR-07 identity | #9, #59 | OIDC code+PKCE flow, sealed login transaction, pinned token exchange and JWKS verification, revocable DB sessions, synthetic provider (refused in production) | **External:** Justice For All OIDC client registration and a live sign-in test |
-| TPR-09 private storage | #11 | Signed quarantine upload permits | B2 buckets/keys, replay ledger, scanner (not started here) |
+| TPR-09 private storage | #11, #69 | Encrypted private object store interface (memory/local/S3-compatible SigV4 drivers, AES-256-GCM per-object keys bound to the key), owner-tagged keys, no public URLs | Private B2 bucket + keys, live driver test, quotas/cost stop, key rotation |
+| TPR-28 upload quarantine | #69 | Byte sniffing, type-mismatch/oversize/active-content/archive-bomb refusal, fail-closed malware scanning (fake EICAR + ClamAV clamd client), owner-only encrypted storage and download, audit of rejections by hash | Live ClamAV service and bucket; chunked/presigned uploads for large files; parser sandbox (TPR-29) |
 | TPR-10 audit & consent | #13, #59 | Audit emitted in-transaction for sessions, adoptions, draft edits, lifecycle events; current-effective-consent service; privacy-safe logging | Retention/deletion workflow, external integrity checkpoint, restore test |
 | TPR-11, 13, 14, 16, 18 | #14, #17, #19, #22, #21 | Library modules with tests (FOIA.gov adapter, editorial history, citation graph, duplicates, lint) | Persistence, live sources, editorial UI |
 | TPR-12 filing routes / TPR-17 templates | #16, #20, #68 | Database registry with independent review enforced in app and DB, immutable reviewed versions, trusted-host list, supersede/reverify, review queue page, catalog/guide read from DB (fixtures only outside production) | Genuine reviewed routes for ≥2 agency formats; template-authoring UI |
@@ -60,7 +61,8 @@ Superseded automation drafts closed in favour of the merged PRs above: #28, #29,
 - With `AUTH_PROVIDER=fake` (non-production only): synthetic sign-in; with no database, a clearly labeled in-memory store.
 - With `AUTH_PROVIDER=oidc`: real OIDC sign-in once the Justice For All client exists.
 - With `DATABASE_URL` + `WORKER_TOKEN` and an external scheduler: in-app deadline reminders.
-- Not enabled: uploads/private storage, agency submission (never), publication, email, public actions.
+- With `STORAGE_DRIVER` + `PRIVATE_STORAGE_KEY` + `MALWARE_SCANNER`: private encrypted uploads (owner-only).
+- Not enabled: agency submission (never), publication, email, public actions.
 
 ## Next dependency-ready steps
 

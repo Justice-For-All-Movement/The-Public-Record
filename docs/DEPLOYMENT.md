@@ -35,6 +35,8 @@ Nothing is required. With no variables the service serves the public preview pag
 | `SESSION_SECRET` | Any sign-in (base64url, ≥32 random bytes) | — |
 | `AUTH_PROVIDER` | `disabled` (default), `fake` (synthetic identities; refused when stage is `production`), `oidc` | — |
 | `OIDC_ISSUER`, `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET`, `OIDC_REDIRECT_URI`, `OIDC_AUTHORIZATION_ENDPOINT`, `OIDC_TOKEN_ENDPOINT`, `OIDC_JWKS_URI` | `AUTH_PROVIDER=oidc`; endpoints must be HTTPS and share the issuer origin | Justice For All identity provider (not yet registered) |
+| `STORAGE_DRIVER`, `PRIVATE_STORAGE_KEY`, `PRIVATE_STORAGE_DIR`, `S3_ENDPOINT`, `S3_REGION`, `S3_BUCKET`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY` | Private encrypted uploads (TPR-09/28); see [PRIVATE_STORAGE.md](PRIVATE_STORAGE.md) | Backblaze B2 (S3-compatible), a **separate private bucket** |
+| `MALWARE_SCANNER`, `CLAMAV_HOST`, `CLAMAV_PORT` | Required for uploads; without a scanner uploads stay disabled | A ClamAV `clamd` service (e.g. a Render private service) |
 | `WORKER_TOKEN` | Outbox worker endpoint `POST /api/internal/jobs/run` (≥32 chars); unset = disabled | An external scheduler (e.g. a Render cron job, paid) |
 | `PUBLIC_ORIGIN` | Optional exact browser origin for CSRF checks (e.g. `https://records.example.org`) | — |
 | `FOIA_AGGREGATOR_PUBLIC_URL` | Live read-only archive search over the FC-13 export (origin only, e.g. `https://foia-aggregator-gjk5.onrender.com`); takes precedence over fixtures | FOIA Aggregator |
