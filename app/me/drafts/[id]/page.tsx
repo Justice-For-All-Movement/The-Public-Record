@@ -7,7 +7,11 @@ import {lintDraft} from "../../../../lib/adoption/draft-lint";
 import {rebuildLifecycle,clockInputFromProjection,verificationWords} from "../../../../lib/lifecycle/projection";
 import {computeFoiaClock} from "../../../../lib/clock/foia-clock";
 import {createFederalCalendar} from "../../../../lib/clock/federal-calendar";
-import {DraftEditor,EventRecorder} from "../../../../components/member-actions";
+import {DraftEditor,EventRecorder,ProofCheck} from "../../../../components/member-actions";
+import {buildSelfFilingGuide} from "../../../../lib/filing/self-filing-guide";
+import {filingRegistry} from "../../../../lib/filing/registry";
+import {isProofReference} from "../../../../lib/filing/proof-fingerprint";
+import {config} from "../../../../lib/server/config";
 
 export const dynamic="force-dynamic";
 export const metadata:Metadata={title:"Draft | The Public Record",robots:{index:false}};
@@ -26,6 +30,7 @@ export default async function DraftPage({params}:{params:Promise<{id:string}>}){
   const clock=computeFoiaClock(clockInputFromProjection(projection,new Date().toISOString().slice(0,10)),calendar);
   const lint=lintDraft(draft);
   const d=clock.determination;
+  const guide=buildSelfFilingGuide(draft.agencyComponentRef,filingRegistry(config().stage));
   return <main style={{maxWidth:900,margin:"auto",padding:"48px 20px"}}>
     <Link href="/me">← My requests</Link>
     <h1 style={{marginBottom:4}}>{draft.title||"Untitled request"}</h1>
@@ -35,6 +40,11 @@ export default async function DraftPage({params}:{params:Promise<{id:string}>}){
       <DraftEditor initial={draft}/>
       {lint.length>0 && <><h3>Drafting checks</h3><ul>{lint.map(i=><li key={i.code}><strong>{i.severity}:</strong> {i.message}</li>)}</ul></>}
       <p style={{fontSize:14,color:"#465451"}}>You file this request yourself using the agency&apos;s official instructions. The Public Record never submits requests for you.</p>
+    </section>
+    <section style={box} aria-labelledby="file"><h2 id="file">File it yourself</h2>
+      {guide.synthetic && <p role="note" style={{background:"#fff3cd",padding:10,borderRadius:8}}>Preview: this agency and its filing route are fictional.</p>}
+      <ol>{guide.steps.map(s=><li key={s.id} style={{marginBottom:8}}><strong>{s.title}.</strong> {s.detail}
+        {s.link && <> <a href={s.link.href} rel="noopener noreferrer" target={s.link.href.startsWith("mailto:")?undefined:"_blank"}>{s.link.label}</a></>}</li>)}</ol>
     </section>
     <section style={box} aria-labelledby="clock"><h2 id="clock">Response timing estimate</h2>
       <p>{d.dueOn?`Estimated determination date: ${d.dueOn}${d.dueLatestOn&&d.dueLatestOn!==d.dueOn?` – ${d.dueLatestOn}`:""}`:`No date estimated (${d.status.replace(/_/g," ")}).`}</p>
@@ -46,9 +56,10 @@ export default async function DraftPage({params}:{params:Promise<{id:string}>}){
       {projection.conflicts.length>0 && <ul role="alert">{projection.conflicts.map((c,i)=><li key={i}>{c.message}</li>)}</ul>}
       <ol>{projection.history.map(h=><li key={h.event.id+h.state} style={{marginBottom:6}}>
         <strong>{h.event.occurredOn}</strong> — {h.event.type.replace(/_/g," ")} ({verificationWords(h.event.verification,h.event.assertedBy)})
-        {h.state!=="applied" && <em> [{h.state.replace(/_/g," ")}]</em>}</li>)}</ol>
+        {h.state!=="applied" && <em> [{h.state.replace(/_/g," ")}]</em>}
+        {isProofReference(h.event.evidenceRef) && <div><ProofCheck reference={h.event.evidenceRef}/></div>}</li>)}</ol>
       <h3>Record what happened</h3>
-      <EventRecorder requestId={id}/>
+      <EventRecorder requestId={id} confirmation={guide.confirmation}/>
     </section>
   </main>;
 }

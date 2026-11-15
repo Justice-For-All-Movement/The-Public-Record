@@ -1,0 +1,27 @@
+{
+  "synthetic": true,
+  "source": "synthetic-fixture-not-real",
+  "notice": "Fictional reviewed filing routes for the fictional template agencies. Hosts use reserved example domains.",
+  "trustedSourceHosts": ["agency.example.org"],
+  "trustedChannelHosts": ["requests.example.org", "agency.example.org"],
+  "routes": [
+    {
+      "agencyComponentId": "0f6c1d2e-3a4b-4c5d-8e9f-a0b1c2d3e4f5",
+      "sourceUrl": "https://agency.example.org/foia/how-to-file",
+      "verifiedBy": "fixture-records-editor",
+      "verifiedAt": "REVIEWED_RECENTLY",
+      "approval": "approved",
+      "channel": {"kind": "portal", "portalUrl": "https://requests.example.org/foia/new"},
+      "acknowledgement": "Portal submissions show a tracking number on screen and by email. Save both."
+    },
+    {
+      "agencyComponentId": "1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d",
+      "sourceUrl": "https://agency.example.org/records-policy/foia",
+      "verifiedBy": "fixture-records-editor",
+      "verifiedAt": "REVIEWED_RECENTLY",
+      "approval": "approved",
+      "channel": {"kind": "email", "emailAddress": "foia@agency.example.org"},
+      "acknowledgement": "Email requests are usually acknowledged by reply within a few working days. Keep your sent message."
+    }
+  ]
+}

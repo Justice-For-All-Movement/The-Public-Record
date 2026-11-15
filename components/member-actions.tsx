@@ -1,6 +1,7 @@
 "use client";
 import {useState} from "react";
 import {useRouter} from "next/navigation";
+import {checkProof,proofReference,sha256Hex} from "../lib/filing/proof-fingerprint";
 
 const key=()=>Array.from(crypto.getRandomValues(new Uint8Array(18)),b=>b.toString(16).padStart(2,"0")).join("");
 async function problemText(res:Response){
@@ -56,7 +57,8 @@ export function DraftEditor({initial}:{initial:EditableDraft}){
 }
 
 const eventChoices:{type:string;label:string;payload?:Record<string,unknown>}[]=[
-  {type:"filed",label:"I filed it with the agency",payload:{channel:"portal"}},
+  {type:"filed",label:"I filed it with the agency (portal)",payload:{channel:"portal"}},
+  {type:"filed",label:"I filed it with the agency (email)",payload:{channel:"email"}},
   {type:"acknowledged",label:"Agency acknowledged receipt"},
   {type:"clarification_requested",label:"Agency asked a clarifying question"},
   {type:"clarification_answered",label:"I answered the agency's question"},
@@ -71,29 +73,54 @@ const eventChoices:{type:string;label:string;payload?:Record<string,unknown>}[]=
   {type:"appeal_filed",label:"I filed an administrative appeal"},
   {type:"withdrawn",label:"I withdrew the request"}
 ];
-export function EventRecorder({requestId}:{requestId:string}){
+export function EventRecorder({requestId,confirmation}:{requestId:string;confirmation:string}){
   const router=useRouter();
   const today=new Date().toISOString().slice(0,10);
   const [choice,setChoice]=useState(0),[on,setOn]=useState(today),[docRef,setDocRef]=useState(""),[status,setStatus]=useState("");
+  const [confirmed,setConfirmed]=useState(false),[tracking,setTracking]=useState(""),[proof,setProof]=useState("");
   const [idem,setIdem]=useState(key);
+  const c=eventChoices[choice];
+  const fingerprint=async(file:File|undefined)=>{
+    if(!file){setProof("");return;}
+    if(file.size>50*1024*1024){setStatus("That file is too large to fingerprint here.");return;}
+    setProof(proofReference(await sha256Hex(await file.arrayBuffer())));
+  };
   const submit=async()=>{
-    const c=eventChoices[choice];
     setStatus("Recording…");
-    const withDoc=docRef.trim().length>0;
+    const ref=proof||docRef.trim();
+    const payload={...(c.payload??{}),...(c.type==="acknowledged" && tracking.trim()?{agencyTrackingNumber:tracking.trim()}:{})};
     const res=await fetch(`/api/v1/me/public-record/requests/${requestId}/events`,{method:"POST",
       headers:{"Content-Type":"application/json","Idempotency-Key":idem},
-      body:JSON.stringify({type:c.type,occurredOn:on,payload:c.payload??{},
-        ...(withDoc?{assertedBy:"agency_document",verification:"document_attached",evidenceRef:docRef.trim()}:{})})});
+      body:JSON.stringify({type:c.type,occurredOn:on,payload,
+        ...(ref?{assertedBy:proof?"requester":"agency_document",verification:"document_attached",evidenceRef:ref}:{}),
+        ...(c.type==="filed"?{selfFilingConfirmation:confirmed?confirmation:""}:{})})});
     if(!res.ok){setStatus(await problemText(res));return;}
     setStatus("Recorded. It stays labeled as reported by you until a reviewer verifies agency evidence.");
-    setIdem(key());router.refresh();
+    setIdem(key());setProof("");setConfirmed(false);router.refresh();
   };
   return <form onSubmit={e=>{e.preventDefault();void submit();}} style={{display:"grid",gap:10}}>
     <label>What happened?<select style={control} value={choice} onChange={e=>setChoice(Number(e.target.value))}>
-      {eventChoices.map((c,i)=><option key={i} value={i}>{c.label}</option>)}</select></label>
+      {eventChoices.map((x,i)=><option key={i} value={i}>{x.label}</option>)}</select></label>
     <label>Date it happened<input style={control} type="date" max={today} value={on} onChange={e=>setOn(e.target.value)}/></label>
-    <label>Agency document reference (optional, e.g. a letter number; no personal details)
-      <input style={control} maxLength={160} pattern="[A-Za-z0-9:_.\-]*" value={docRef} onChange={e=>setDocRef(e.target.value)}/></label>
+    {c.type==="acknowledged" && <label>Agency tracking number (optional)<input style={control} maxLength={64} value={tracking} onChange={e=>setTracking(e.target.value)}/></label>}
+    <label>Private receipt fingerprint (optional). The file is hashed in your browser and never uploaded.
+      <input type="file" onChange={e=>void fingerprint(e.target.files?.[0])}/></label>
+    {proof && <p style={{fontSize:13,wordBreak:"break-all"}}>Fingerprint: {proof}</p>}
+    {!proof && <label>Agency document reference (optional, e.g. a letter number; no personal details)
+      <input style={control} maxLength={160} pattern="[A-Za-z0-9:_.\-]*" value={docRef} onChange={e=>setDocRef(e.target.value)}/></label>}
+    {c.type==="filed" && <label style={{display:"flex",gap:8,alignItems:"flex-start"}}>
+      <input type="checkbox" checked={confirmed} onChange={e=>setConfirmed(e.target.checked)} required/>{confirmation}</label>}
     <div><button type="submit">Record event</button> <span aria-live="polite">{status}</span></div>
   </form>;
+}
+
+/** Re-hash a receipt locally and compare with a stored fingerprint (tamper check). */
+export function ProofCheck({reference}:{reference:string}){
+  const [result,setResult]=useState("");
+  return <label style={{fontSize:14}}>Check a receipt file against this fingerprint:{" "}
+    <input type="file" onChange={async e=>{
+      const f=e.target.files?.[0];if(!f)return;
+      const r=checkProof(reference,await sha256Hex(await f.arrayBuffer()));
+      setResult(r==="matches"?"Matches: the file is unchanged.":"Does not match: this is a different or modified file.");
+    }}/> <span aria-live="polite">{result}</span></label>;
 }

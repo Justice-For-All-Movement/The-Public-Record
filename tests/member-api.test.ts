@@ -8,6 +8,7 @@ import {loadConfig,resetConfigForTests} from "../lib/server/config";
 import {resetPoolForTests} from "../lib/server/db";
 import {createEphemeralDatabase} from "./helpers/ephemeral-db";
 import {Jar,req,signIn} from "./helpers/http";
+import {SELF_FILING_CONFIRMATION} from "../lib/filing/self-filing-guide";
 
 const base=process.env.TEST_DATABASE_URL;
 const params=(id:string)=>({params:Promise.resolve({id})});
@@ -67,18 +68,21 @@ describe.each(modes)("member drafts API ($name)",({db})=>{
     expect((await getDraft(req("/api/v1/me/public-record/drafts/"+draftId,{jar:grace}),params(draftId))).status).toBe(404);
     expect((await patchDraft(jsonReq("/x","PATCH",grace,{title:"hijack"},{"if-match":'"v2"'}),params(draftId))).status).toBe(404);
     expect((await listEvents(req("/x",{jar:grace}),params(draftId))).status).toBe(404);
-    expect((await postEvent(jsonReq("/x","POST",grace,{type:"filed",occurredOn:"2026-01-02",payload:{channel:"portal"}}),params(draftId))).status).toBe(404);
+    expect((await postEvent(jsonReq("/x","POST",grace,{type:"filed",occurredOn:"2026-01-02",payload:{channel:"portal"},
+      selfFilingConfirmation:SELF_FILING_CONFIRMATION}),params(draftId))).status).toBe(404);
     expect((await (await listDrafts(req("/x",{jar:grace}))).json()).drafts).toEqual([]);
   });
   it("records lifecycle events with honest evidence labels and a clock",async()=>{
     const path=`/api/v1/me/public-record/requests/${draftId}/events`;
-    const filed=await postEvent(jsonReq(path,"POST",ada,{type:"filed",occurredOn:"2026-01-02",payload:{channel:"portal"}},{"idempotency-key":"event-key-00000000001"}),params(draftId));
+    expect((await postEvent(jsonReq(path,"POST",ada,{type:"filed",occurredOn:"2026-01-02",payload:{channel:"portal"}}),params(draftId))).status).toBe(422);
+    const confirm={selfFilingConfirmation:SELF_FILING_CONFIRMATION};
+    const filed=await postEvent(jsonReq(path,"POST",ada,{type:"filed",occurredOn:"2026-01-02",payload:{channel:"portal"},...confirm},{"idempotency-key":"event-key-00000000001"}),params(draftId));
     expect(filed.status).toBe(201);
-    const again=await postEvent(jsonReq(path,"POST",ada,{type:"filed",occurredOn:"2026-01-02",payload:{channel:"portal"}},{"idempotency-key":"event-key-00000000001"}),params(draftId));
+    const again=await postEvent(jsonReq(path,"POST",ada,{type:"filed",occurredOn:"2026-01-02",payload:{channel:"portal"},...confirm},{"idempotency-key":"event-key-00000000001"}),params(draftId));
     expect(again.status).toBe(200);
     expect((await postEvent(jsonReq(path,"POST",ada,{type:"acknowledged",occurredOn:"2026-01-05",assertedBy:"reviewer",
       verification:"reviewer_verified",evidenceRef:"doc:forged"}),params(draftId))).status).toBe(422);
-    expect((await postEvent(jsonReq(path,"POST",ada,{type:"filed",occurredOn:"2999-01-01",payload:{channel:"portal"}}),params(draftId))).status).toBe(422);
+    expect((await postEvent(jsonReq(path,"POST",ada,{type:"filed",occurredOn:"2999-01-01",payload:{channel:"portal"},...confirm}),params(draftId))).status).toBe(422);
     expect((await postEvent(jsonReq(path,"POST",ada,{type:"clarification_answered",occurredOn:"2026-01-06",causedBy:"00000000-0000-4000-8000-000000000000"}),params(draftId))).status).toBe(422);
     expect((await postEvent(jsonReq(path,"POST",ada,{type:"acknowledged",occurredOn:"2026-01-05",assertedBy:"agency_document",
       verification:"document_attached",evidenceRef:"doc:fixture-ack-1"}),params(draftId))).status).toBe(201);
