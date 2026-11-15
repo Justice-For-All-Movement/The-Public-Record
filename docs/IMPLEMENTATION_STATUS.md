@@ -1,8 +1,8 @@
 # Implementation and acceptance register
 
 **Planning baseline:** 2026-10-10. Canonical scope and 52 work packages: [development plan](DEVELOPMENT_PLAN.md).
-**Last reconciled:** 2026-11-15 against merged PRs #56–#63 and CI on `main`.
-**Accepted (repository/CI level):** 10/52 (19.2%). **Public production service:** NOT RELEASED. **Deployed service:** none verified (deployable; see [DEPLOYMENT.md](DEPLOYMENT.md)).
+**Last reconciled:** 2026-11-15 against merged PRs #56–#66 and CI on `main`.
+**Accepted (repository/CI level):** 11/52 (21.2%). **Public production service:** NOT RELEASED. **Deployed service:** none verified (deployable; see [DEPLOYMENT.md](DEPLOYMENT.md)).
 **Machine-readable mapping:** [`registry/prs.json`](../registry/prs.json) (units → PRs, dependencies, external prerequisites) and [`.exechub/approved-pr-mapping.json`](../.exechub/approved-pr-mapping.json) (accepted units only).
 
 A merged PR alone does not mean a package is accepted. Acceptance here means the package's stated acceptance criterion is demonstrated by merged code and passing CI (unit, real-PostgreSQL integration and container smoke tests). Deployment, live external integrations and independent human security review are separate gates and are reported separately. Per the 2026-10-13 owner policy, AI-assisted review/testing replaces the human-review prerequisite for development; it is **not** an independent audit or certification.
@@ -11,12 +11,12 @@ A merged PR alone does not mean a package is accepted. Acceptance here means the
 |---|---|---:|---:|---:|
 | TPR-01–10 | Foundation, security, data | 10 | 7 | 3 (07, 09, 10) |
 | TPR-11–18 | Research and templates | 8 | 0 | 8 (11–18) |
-| TPR-19–27 | Citizen filing | 9 | 3 | 6 (20, 21, 22, 25, 26, 27) |
+| TPR-19–27 | Citizen filing | 9 | 4 | 5 (21, 22, 25, 26, 27) |
 | TPR-28–32 | Documentary publication | 5 | 0 | 0 |
 | TPR-33–40 | Eight public actions | 8 | 0 | 0 |
 | TPR-41–46 | Platform integration | 6 | 0 | 0 |
 | TPR-47–52 | Production and verification | 6 | 0 | 1 partial (51: deploy config) |
-| **Total** | | **52** | **10** | |
+| **Total** | | **52** | **11** | |
 
 ## Accepted (repository/CI level)
 
@@ -30,6 +30,7 @@ A merged PR alone does not mean a package is accepted. Acceptance here means the
 | TPR-06 | [PR #6](https://github.com/Justice-For-All-Movement/The-Public-Record/pull/6) | Public/private PostgreSQL schema, checksum migrations, RLS integration tests |
 | TPR-08 | [PR #59](https://github.com/Justice-For-All-Movement/The-Public-Record/pull/59) (+ #10) | Server-owned, issuer-scoped append-only role grants; runtime role cannot write grants (no self-escalation); owner-only drafts/events/sessions/audit under forced RLS with `tpr_app_runtime`; cross-member API attempts return no private data (tested against PostgreSQL) |
 | TPR-19 | [PR #60](https://github.com/Justice-For-All-Movement/The-Public-Record/pull/60) | Anonymous work cards of reviewed templates; pinned private adoption; DB-saved drafts with optimistic concurrency; member dashboard and history; only the owner sees drafts; no legal identity collected |
+| TPR-20 | [PR #66](https://github.com/Justice-For-All-Movement/The-Public-Record/pull/66) (+ #23) | Browser-local drafting plus export of saved drafts (copy, download, print/PDF) addressing the pinned agency, matching the pinned template text with version provenance, and containing no hidden submission fields |
 | TPR-23 | [PR #58](https://github.com/Justice-For-All-Movement/The-Public-Record/pull/58) | Typed append-only lifecycle events, deterministic projection handling out-of-order/repeated/conflicting fixtures, corrections retained in history, DB append-only + RLS forbidding participant self-verification |
 | TPR-24 | [PR #57](https://github.com/Justice-For-All-Movement/The-Public-Record/pull/57) | 5 U.S.C. 6103 holiday calendar; legal test matrix for holidays, unknown receipt, routing, extensions, tolls/fee pause, disputed outcomes and appeals; output never states illegality |
 
@@ -42,7 +43,6 @@ A merged PR alone does not mean a package is accepted. Acceptance here means the
 | TPR-10 audit & consent | #13, #59 | Audit emitted in-transaction for sessions, adoptions, draft edits, lifecycle events; current-effective-consent service; privacy-safe logging | Retention/deletion workflow, external integrity checkpoint, restore test |
 | TPR-11–14, 16–18 | #14, #16, #17, #19, #22, #20, #21 | Library modules with tests (FOIA.gov adapter, verified channels, editorial history, citation graph, duplicates, templates, lint) | Persistence, live sources, editorial UI |
 | TPR-15 archive resolver | #61 | Resolver with provenance, coverage warnings, holding status, fixture and guarded HTTPS adapters, public search page/API; no outcome reads as "records don't exist" | **External:** FOIA Aggregator public JSON endpoint compatible with `public-archive-search/v1` |
-| TPR-20 compose/export | #23 | Browser-local drafting and copy/print | PDF export, pinned-template provenance in export |
 | TPR-21 self-filing guide | #62 | Verified-destination-only guide, explicit self-filing affirmation, no submit path | Real human-reviewed filing routes for ≥2 agency formats (TPR-12) |
 | TPR-22 proof & receipt | #62 | In-browser receipt fingerprints, tamper check, evidence-level labels, tracking numbers | Reviewer verification workflow; private proof storage (TPR-09/28) |
 | TPR-25 notifications & outbox | #65 | Durable outbox (dedupe, SKIP LOCKED leases, recovery, backoff, dead-letter), confined worker role, in-app deadline reminders with opt-out, token-guarded runner, mail adapters (fake + Resend-compatible, mocked) | Email channel (consented address storage, unsubscribe links) and a live provider test; external scheduler provisioning |
