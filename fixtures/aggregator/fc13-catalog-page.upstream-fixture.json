@@ -1,0 +1,94 @@
+{
+  "next_cursor": "eyJhIjoyLCJzIjoic25hcF85MzZiYzk3OGZlNWZjNjU1YjY2NCJ9",
+  "records": [
+    {
+      "agency": {
+        "name": "Example Department",
+        "slug": "example-dept"
+      },
+      "description": null,
+      "discovered_at": "2026-01-01T00:00:00+00:00",
+      "file_type": "pdf",
+      "filename": "f.pdf",
+      "mime_type": "application/pdf",
+      "office": {
+        "name": "Example Office",
+        "slug": "example-office"
+      },
+      "preservation": {
+        "acquisition_status": "downloaded",
+        "archived_at": "2026-01-02T00:00:00+00:00",
+        "file_size": 1234,
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "status": "archived"
+      },
+      "published_date": "2021-03-04",
+      "published_year": 2021,
+      "record_id": "rec_9100ac0214caf5052eeef85e",
+      "sources": [
+        {
+          "provenance": "official",
+          "source_id": "src_bc4e3cc248894c08",
+          "url": "https://foia.example.gov/reading-room/"
+        },
+        {
+          "provenance": "official",
+          "source_id": "src_5c0ead45d86b4dfc",
+          "url": "https://mirror.example.gov/frequently-requested"
+        }
+      ],
+      "text": {
+        "character_count": 4,
+        "extraction_method": "native_text",
+        "extraction_status": "indexed",
+        "indexed": true,
+        "truncated": false
+      },
+      "title": "Contract A",
+      "url": "https://foia.example.gov/docs/a.pdf"
+    },
+    {
+      "agency": {
+        "name": "Example Department",
+        "slug": "example-dept"
+      },
+      "description": null,
+      "discovered_at": "2026-01-01T00:00:00+00:00",
+      "file_type": "pdf",
+      "filename": "f.pdf",
+      "mime_type": "application/pdf",
+      "office": {
+        "name": "Example Office",
+        "slug": "example-office"
+      },
+      "preservation": {
+        "acquisition_status": "failed",
+        "archived_at": null,
+        "file_size": null,
+        "sha256": null,
+        "status": "metadata_only"
+      },
+      "published_date": null,
+      "published_year": null,
+      "record_id": "rec_3b297e1bb6e04c5293ca5d2d",
+      "sources": [
+        {
+          "provenance": "official",
+          "source_id": "src_bc4e3cc248894c08",
+          "url": "https://foia.example.gov/reading-room/"
+        }
+      ],
+      "text": {
+        "character_count": null,
+        "extraction_method": null,
+        "extraction_status": null,
+        "indexed": false,
+        "truncated": null
+      },
+      "title": "Memo B",
+      "url": "https://foia.example.gov/docs/b.pdf"
+    }
+  ],
+  "schema_version": "foia-catalog-export/1",
+  "snapshot_id": "snap_936bc978fe5fc655b664"
+}

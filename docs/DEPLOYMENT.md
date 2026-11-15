@@ -1,5 +1,9 @@
 # Deployment (Render web service + optional Neon PostgreSQL)
 
+**Live preview (deployed by the lead, 2026-11-15):** https://the-public-record-w34f.onrender.com — Render service `the-public-record` (Docker, free plan, auto-deploy from `main`), its own Neon PostgreSQL 16 database, `TPR_ENVIRONMENT=preview`, `AUTH_PROVIDER=disabled`, archive fixtures on. `main` must stay deployable: every merge redeploys. Probes: `/api/health`, `/api/ready`. (Not reachable from the agent sandbox; verify from a browser.)
+
+FOIA Aggregator export API (FC-13), live: https://foia-aggregator-gjk5.onrender.com — set `FOIA_AGGREGATOR_PUBLIC_URL` to this origin to search the real catalog (it is empty until its B2 storage is connected; results then say so).
+
 **Status:** deployable preview. Merging this does **not** create any Render, Neon or B2 resource; an authorized lead applies `render.yaml` in the Justice For All workspace. `production_ready` stays `false` until the TPR-47..52 gates are met.
 
 ## Build and start
@@ -33,7 +37,7 @@ Nothing is required. With no variables the service serves the public preview pag
 | `OIDC_ISSUER`, `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET`, `OIDC_REDIRECT_URI`, `OIDC_AUTHORIZATION_ENDPOINT`, `OIDC_TOKEN_ENDPOINT`, `OIDC_JWKS_URI` | `AUTH_PROVIDER=oidc`; endpoints must be HTTPS and share the issuer origin | Justice For All identity provider (not yet registered) |
 | `WORKER_TOKEN` | Outbox worker endpoint `POST /api/internal/jobs/run` (≥32 chars); unset = disabled | An external scheduler (e.g. a Render cron job, paid) |
 | `PUBLIC_ORIGIN` | Optional exact browser origin for CSRF checks (e.g. `https://records.example.org`) | — |
-| `FOIA_AGGREGATOR_PUBLIC_URL` | Live read-only archive search | FOIA Aggregator (no compatible JSON endpoint exists yet) |
+| `FOIA_AGGREGATOR_PUBLIC_URL` | Live read-only archive search over the FC-13 export (origin only, e.g. `https://foia-aggregator-gjk5.onrender.com`); takes precedence over fixtures | FOIA Aggregator |
 | `FOIA_AGGREGATOR_FIXTURES` | `true` to use the synthetic archive fixtures (ignored in production) | — |
 
 Generate a session secret with `openssl rand -base64 32 | tr '+/' '-_' | tr -d '='`.
