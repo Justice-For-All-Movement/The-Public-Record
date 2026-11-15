@@ -31,6 +31,8 @@ export interface RuntimeConfig {
   allowPrivilegedDbRole:boolean;
   /** Exact browser origin for CSRF checks, e.g. https://records.example.org (optional). */
   publicOrigin:string|null;
+  /** Bearer token for the internal job-runner endpoint (>= 32 chars); null disables it. */
+  workerToken:string|null;
 }
 
 type Env = Record<string,string|undefined>;
@@ -108,6 +110,7 @@ export function loadConfig(env:Env=process.env):RuntimeConfig {
     aggregatorUrl:httpsUrl(clean(env.FOIA_AGGREGATOR_PUBLIC_URL)),
     aggregatorFixtures:env.FOIA_AGGREGATOR_FIXTURES==="true" && stage!=="production",
     allowPrivilegedDbRole:env.TPR_ALLOW_PRIVILEGED_DB_ROLE==="true" && (stage==="local"||stage==="test"),
+    workerToken:(()=>{const t=clean(env.WORKER_TOKEN);return t && t.length>=32 && t.length<=256 && /^[\x21-\x7e]+$/.test(t)?t:null;})(),
     publicOrigin:(()=>{const u=httpsUrl(clean(env.PUBLIC_ORIGIN));return u?new URL(u).origin:null;})()
   };
 }

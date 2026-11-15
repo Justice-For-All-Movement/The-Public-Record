@@ -445,6 +445,129 @@
           }
         }
       }
+    },
+    "/api/v1/me/public-record/notifications": {
+      "get": {
+        "summary": "The member's in-app notifications and reminder preference",
+        "security": [
+          {
+            "memberSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Problem details",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Problem details",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "summary": "Opt in/out of deadline reminders ({deadlineReminders}) or mark one read ({markRead})",
+        "security": [
+          {
+            "memberSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Problem details",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Problem details",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Problem details",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/internal/jobs/run": {
+      "post": {
+        "summary": "Run one bounded outbox pass (external scheduler only; 404 unless configured)",
+        "security": [
+          {
+            "workerToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Pass counts"
+          },
+          "401": {
+            "description": "Problem details",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Problem details",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Problem details",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -673,6 +796,11 @@
         "in": "cookie",
         "name": "__Host-tpr_session",
         "description": "HttpOnly server session set by /api/auth/callback. Mutations also require a same-origin Origin header."
+      },
+      "workerToken": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "WORKER_TOKEN for the external scheduler only."
       }
     }
   }

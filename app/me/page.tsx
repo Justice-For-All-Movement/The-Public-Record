@@ -3,7 +3,8 @@ import Link from "next/link";
 import {config} from "../../lib/server/config";
 import {pageAuth} from "../../lib/server/page-auth";
 import {draftStoreFor} from "../../lib/server/draft-store";
-import {AdoptButton} from "../../components/member-actions";
+import {AdoptButton,ReminderToggle} from "../../components/member-actions";
+import {getPreferences,listNotifications} from "../../lib/server/notifications";
 
 export const dynamic="force-dynamic";
 export const metadata:Metadata={title:"My requests | The Public Record",robots:{index:false}};
@@ -30,6 +31,7 @@ export default async function MemberDashboard({searchParams}:{searchParams:Searc
   const {session,principal,store}=auth.ctx;
   const drafts=await draftStoreFor(store).list(session);
   const activity=(await store.listAudit(session)).slice(0,10);
+  const [notes,prefs]=await Promise.all([listNotifications(store,session),getPreferences(store,session)]);
   return <main style={{maxWidth:860,margin:"auto",padding:"48px 20px"}}>
     <Link href="/">← The Public Record</Link>{banner}
     <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",flexWrap:"wrap",gap:12}}>
@@ -46,6 +48,13 @@ export default async function MemberDashboard({searchParams}:{searchParams:Searc
         <span style={{color:"#465451"}}> · updated {d.updatedAt.slice(0,10)}</span></li>)}</ul>
       <AdoptButton templateId={null} label="Start a blank draft"/>
     </section>
+    {prefs.available && <section style={box} aria-labelledby="notes">
+      <h2 id="notes">Notifications</h2>
+      <ReminderToggle enabled={prefs.deadlineReminders}/>
+      {notes.length===0?<p>No notifications.</p>:<ul>{notes.slice(0,10).map(n=><li key={n.id} style={{marginBottom:8,fontWeight:n.read?"normal":"bold"}}>
+        {n.linkPath?<Link href={n.linkPath}>{n.title}</Link>:n.title}<div style={{fontWeight:"normal"}}>{n.body}</div></li>)}</ul>}
+      <p style={{fontSize:14,color:"#465451"}}>Reminders appear here only. No email is sent.</p>
+    </section>}
     <section style={box} aria-labelledby="activity">
       <h2 id="activity">Recent account activity</h2>
       <ul>{activity.map((a,i)=><li key={i}>{a.occurredAt.slice(0,16).replace("T"," ")} UTC — {a.action.replace(/_/g," ")}</li>)}</ul>

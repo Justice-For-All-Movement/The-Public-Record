@@ -155,3 +155,13 @@ export function AppealLetterBuilder({input,suggested}:{input:{agencyLabel:string
       <div><button type="button" onClick={async()=>{await navigator.clipboard.writeText(text);setCopied("Copied. Review it, then send it yourself as the agency's letter instructs.");}}>Copy letter</button> <span aria-live="polite">{copied}</span></div></>}
   </div>;
 }
+
+export function ReminderToggle({enabled}:{enabled:boolean}){
+  const router=useRouter();
+  const [on,setOn]=useState(enabled),[status,setStatus]=useState("");
+  return <label style={{display:"flex",gap:8,alignItems:"center"}}><input type="checkbox" checked={on} onChange={async e=>{
+    const next=e.target.checked;setOn(next);setStatus("Saving…");
+    const res=await fetch("/api/v1/me/public-record/notifications",{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({deadlineReminders:next})});
+    setStatus(res.ok?"Saved.":await problemText(res));router.refresh();
+  }}/>In-app reminders before estimated dates <span aria-live="polite" style={{color:"#465451"}}>{status}</span></label>;
+}

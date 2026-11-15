@@ -7,6 +7,11 @@ import {pinReviewedTemplate} from "../adoption/templates";
 import {LifecycleEventError,canonicalJson,validateEvent,type LifecycleEvent} from "../lifecycle/events";
 import {appendParticipantEvent,listLifecycleEvents,type NewLifecycleEvent} from "../lifecycle/repository";
 import {withSubject} from "./db";
+import {clockInputFromProjection,rebuildLifecycle} from "../lifecycle/projection";
+import {computeFoiaClock} from "../clock/foia-clock";
+import {createFederalCalendar} from "../clock/federal-calendar";
+import {scheduleReminders} from "../jobs/reminders";
+const reminderCalendar=createFederalCalendar();
 import type {AuthSession,MemberStore} from "./member-store";
 
 export interface DraftRecord {
@@ -130,7 +135,13 @@ export function createPostgresDraftStore():DraftStore {
     appendEvent:(s,id,input,key)=>!isDraftId(id)?Promise.resolve(null):withSubject(s,async db=>{
       if(!(await get(db,id)))return null;
       const res=await appendParticipantEvent(db,s.subject,id,input,key);
-      if(!res.replayed)await recordAudit(db,{owner:s.subject,actor:s.subject,action:"lifecycle_event_recorded",objectKind:"lifecycle_event",objectId:res.event.id});
+      if(!res.replayed){
+        await recordAudit(db,{owner:s.subject,actor:s.subject,action:"lifecycle_event_recorded",objectKind:"lifecycle_event",objectId:res.event.id});
+        // TPR-25: schedule private reminders from the rebuilt estimate, in the same transaction.
+        const now=today();
+        const projection=rebuildLifecycle(id,await listLifecycleEvents(db,id));
+        await scheduleReminders(db,s.subject,id,computeFoiaClock(clockInputFromProjection(projection,now),reminderCalendar),now);
+      }
       return res;
     })
   };
